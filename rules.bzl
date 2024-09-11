@@ -73,6 +73,8 @@ def _arm_toolchain_impl(rctx):
         "%{compiler_package}": compiler_package,
         "%{compiler_package_path}": compiler_package_path,
 
+        "%{add_toolchain_linkdirs}": json.encode(rctx.attr.add_toolchain_linkdirs),
+
         "%{exec_compatible_with}": json.encode(rctx.attr.exec_compatible_with),
         "%{target_compatible_with}": json.encode(rctx.attr.target_compatible_with),
 
@@ -124,6 +126,8 @@ _arm_toolchain = repository_rule(
         'archives': attr.string(mandatory = True),
         'compiler_package_name': attr.string(default = "//"),
 
+        'add_toolchain_linkdirs': attr.bool(default = True),
+
         'exec_compatible_with': attr.string_list(default = []),
         'target_compatible_with': attr.string_list(default = []),
 
@@ -163,7 +167,9 @@ def arm_toolchain(
         local_download = True,
         registry = ARM_REGISTRY,
 
-        auto_register_toolchain = True
+        auto_register_toolchain = True,
+
+        add_toolchain_linkdirs = True
     ):
     """arm Toolchain
 
@@ -191,7 +197,9 @@ def arm_toolchain(
         local_download: wether the archive should be downloaded in the same repository (True) or in its own repo
         registry: The arm registry to use, to allow close environement to provide their own mirroir/url
 
-        auto_register_toolchain: If the toolchain is registered to bazel using `register_toolchains`
+        auto_register_toolchain: If the toolchain is registered to bazel using `register_toolchains
+
+        add_toolchain_linkdirs: If the toolchain linkdirs are added to the compile command (aka: -L...). This shown some issue: when this is enable stm32 won't boot (TODO)
     """
     compiler_package_name = ""
 
@@ -216,6 +224,8 @@ def arm_toolchain(
         local_download = local_download,
         archives = json.encode(archive["archives"]),
         compiler_package_name = compiler_package_name,
+
+        add_toolchain_linkdirs = add_toolchain_linkdirs,
 
         exec_compatible_with = exec_compatible_with,
         target_compatible_with = target_compatible_with,

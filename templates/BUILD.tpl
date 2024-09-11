@@ -44,10 +44,10 @@ cc_toolchain_config(
     linkopts = %{linkopts},
     defines = %{defines},
     includedirs = %{includedirs},
-    linkdirs = [
-        "%{compiler_package_path}%{arm_toolchain_type}/lib",
-        "%{compiler_package_path}lib/gcc/%{arm_toolchain_type}/%{compiler_version}",
-    ] + %{linkdirs},
+    linkdirs = %{linkdirs} + ([
+            "%{compiler_package_path}%{arm_toolchain_type}/lib",
+            "%{compiler_package_path}lib/gcc/%{arm_toolchain_type}/%{compiler_version}",
+        ] if "%{add_toolchain_linkdirs}" == "true" else []),
     toolchain_libs = %{toolchain_libs},
 )
 
