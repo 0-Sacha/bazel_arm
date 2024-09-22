@@ -85,9 +85,8 @@ toolchain(
 filegroup(
     name = "toolchain_every_files",
     srcs = [
-        ":toolchain_internal_every_files",
-        "%{toolchain_extras_filegroup}",
-    ]
+        "%{compiler_package}:toolchain_internal_every_files",
+    ] + %{toolchain_extras_filegroups}
 )
 
 
