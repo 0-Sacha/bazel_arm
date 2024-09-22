@@ -76,7 +76,7 @@ def arm_binary(name, arm_file_elf = None, arm_file_bin = None, arm_file_hex = No
     cc_binary(name = binary_rule_name, **kwargs)
     arm_all_files(
         name = name,
-        objcopy = "@%{rctx_name}//:objcopy",
+        objcopy = "%{compiler_package}:objcopy",
         dep = ":{}".format(binary_rule_name),
         elf = "{}.elf".format(name) if arm_file_elf == None else arm_file_elf,
         bin = "{}.bin".format(name) if arm_file_bin == None else arm_file_bin,

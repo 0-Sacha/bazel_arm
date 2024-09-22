@@ -1,6 +1,7 @@
 ""
 
 load("@bazel_arm//:registry.bzl", "ARM_REGISTRY")
+load("@bazel_utilities//toolchains:extras_filegroups.bzl", "filegroup_translate_to_starlark")
 load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx", "HOST_EXTENTION")
 load("@bazel_utilities//toolchains:registry.bzl", "get_archive_from_registry")
 
@@ -55,12 +56,6 @@ def _arm_toolchain_impl(rctx):
         compiler_package = "@{}//".format(rctx.attr.compiler_package_name)
         compiler_package_path = "external/{}/".format(rctx.attr.compiler_package_name)
 
-    toolchain_extras_filegroup = "@{}//{}:{}".format(
-        rctx.attr.toolchain_extras_filegroup.repo_name,
-        rctx.attr.toolchain_extras_filegroup.package,
-        rctx.attr.toolchain_extras_filegroup.name,
-    )
-
     substitutions = {
         "%{rctx_name}": rctx.name,
         "%{rctx_path}": toolchain_path,
@@ -87,7 +82,7 @@ def _arm_toolchain_impl(rctx):
         "%{linkdirs}": json.encode(rctx.attr.linkdirs),
         "%{toolchain_libs}": json.encode(rctx.attr.toolchain_libs),
 
-        "%{toolchain_extras_filegroup}": toolchain_extras_filegroup,
+        "%{toolchain_extras_filegroups}": json.encode(filegroup_translate_to_starlark(rctx.attr.toolchain_extras_filegroups)),
     }
     rctx.template(
         "BUILD",
@@ -140,7 +135,7 @@ _arm_toolchain = repository_rule(
         'linkdirs': attr.string_list(default = []),
         'toolchain_libs': attr.string_list(default = []),
 
-        'toolchain_extras_filegroup': attr.label(),
+        'toolchain_extras_filegroups': attr.label_list(default = []),
     },
     local = False,
 )
@@ -162,7 +157,7 @@ def arm_toolchain(
         linkdirs = [],
         toolchain_libs = [],
 
-        toolchain_extras_filegroup = "@bazel_utilities//:empty",
+        toolchain_extras_filegroups = [],
         
         local_download = True,
         registry = ARM_REGISTRY,
@@ -192,7 +187,7 @@ def arm_toolchain(
         linkdirs: linkdirs
         toolchain_libs: toolchain_libs
 
-        toolchain_extras_filegroup: filegroup added to the cc_toolchain rule to get access to thoses files when sandboxed
+        toolchain_extras_filegroups: filegroup added to the cc_toolchain rule to get access to thoses files when sandboxed
 
         local_download: wether the archive should be downloaded in the same repository (True) or in its own repo
         registry: The arm registry to use, to allow close environement to provide their own mirroir/url
@@ -239,7 +234,7 @@ def arm_toolchain(
         linkdirs = linkdirs,
         toolchain_libs = toolchain_libs,
 
-        toolchain_extras_filegroup = toolchain_extras_filegroup,
+        toolchain_extras_filegroups = toolchain_extras_filegroups,
     )
 
     if auto_register_toolchain:
