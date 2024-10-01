@@ -21,12 +21,12 @@ ARM_NONE_EABI_ARCHIVES_13_3_REL1 = {
         "linux_x86_64": {
             "url": "https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz",
             "sha256": "95C011CEE430E64DD6087C75C800F04B9C49832CC1000127A92A97F9C8D83AF4",
-            "strip_prefix": "arm-gnu-toolchain-13.3.Rel1-x86_64-arm-none-eabi",
+            "strip_prefix": "arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi",
         },
         "linux_aarch64": {
             "url": "https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-aarch64-arm-none-eabi.tar.xz",
             "sha256": "C8824BFFD057AFCE2259F7618254E840715F33523A3D4E4294F471208F976764",
-            "strip_prefix": "arm-gnu-toolchain-13.3.Rel1-aarch64-arm-none-eabi",
+            "strip_prefix": "arm-gnu-toolchain-13.3.rel1-aarch64-arm-none-eabi",
         },
         "darwin_x86_64": {
             "url": "https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-darwin-arm64-aarch64-none-elf.tar.xz",
