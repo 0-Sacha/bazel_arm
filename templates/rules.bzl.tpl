@@ -47,6 +47,11 @@ def _arm_all_files_impl(ctx):
         DebugPackageInfo(
             target_label = ctx.attr.dep.label,
             unstripped_file = ctx.outputs.elf,
+        ),
+        OutputGroupInfo(
+            binary = depset([ctx.outputs.elf]),
+            bin = depset([ctx.outputs.bin]),
+            hex = depset([ctx.outputs.hex]),
         )
     ]
 
@@ -59,7 +64,7 @@ arm_all_files = rule(
         "bin": attr.output(),
         "hex": attr.output(),
     },
-    provides = [DebugPackageInfo],
+    provides = [DebugPackageInfo, OutputGroupInfo],
 )
 
 def arm_binary(name, arm_file_elf = None, arm_file_bin = None, arm_file_hex = None, **kwargs):
