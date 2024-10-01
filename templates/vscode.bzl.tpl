@@ -1,6 +1,6 @@
 ""
 
-load("@bazel_utilities//tools:vscode.bzl", _vscode_config = "vscode_config", _vscode_task = "vscode_task", _vscode_launch = "vscode_launch")
+load("@bazel_utilities//tools/vscode:vscode.bzl", _vscode_config = "vscode_config", _vscode_task = "vscode_task", _vscode_launch = "vscode_launch")
 
 def vscode_config(name, **kwargs):
     """VS config for .vscode files
