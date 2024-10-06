@@ -92,63 +92,63 @@ filegroup(
 
 filegroup(
     name = "cpp",
-    srcs = ["bin/%{arm_toolchain_type}-cpp%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-cpp%{extension}"],
 )
 filegroup(
     name = "cc",
-    srcs = ["bin/%{arm_toolchain_type}-gcc%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-gcc%{extension}"],
 )
 filegroup(
     name = "cxx",
-    srcs = ["bin/%{arm_toolchain_type}-g++%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-g++%{extension}"],
 )
 filegroup(
     name = "as",
-    srcs = ["bin/%{arm_toolchain_type}-as%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-as%{extension}"],
 )
 filegroup(
     name = "ar",
-    srcs = ["bin/%{arm_toolchain_type}-ar%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-ar%{extension}"],
 )
 filegroup(
     name = "ld",
-    srcs = ["bin/%{arm_toolchain_type}-ld%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-ld%{extension}"],
 )
 
 filegroup(
     name = "objcopy",
-    srcs = ["bin/%{arm_toolchain_type}-objcopy%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-objcopy%{extension}"],
 )
 filegroup(
     name = "strip",
-    srcs = ["bin/%{arm_toolchain_type}-strip%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-strip%{extension}"],
 )
 
 filegroup(
     name = "cov",
-    srcs = ["bin/%{arm_toolchain_type}-gcov%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-gcov%{extension}"],
 )
 
 filegroup(
     name = "size",
-    srcs = ["bin/%{arm_toolchain_type}-size%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-size%{extension}"],
 )
 filegroup(
     name = "nm",
-    srcs = ["bin/%{arm_toolchain_type}-nm%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-nm%{extension}"],
 )
 filegroup(
     name = "objdump",
-    srcs = ["bin/%{arm_toolchain_type}-objdump%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-objdump%{extension}"],
 )
 filegroup(
     name = "dwp",
-    srcs = ["bin/%{arm_toolchain_type}-dwp%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-dwp%{extension}"],
 )
 
 filegroup(
     name = "dbg",
-    srcs = ["bin/%{arm_toolchain_type}-gdb%{extention}"],
+    srcs = ["bin/%{arm_toolchain_type}-gdb%{extension}"],
 )
 
 
@@ -179,8 +179,8 @@ filegroup(
 filegroup(
     name = "toolchain_bins",
     srcs = glob([
-        "bin/*%{extention}",
-        "arm-none-eabi/bin/*%{extention}",
+        "bin/*%{extension}",
+        "arm-none-eabi/bin/*%{extension}",
     ]),
 )
 
