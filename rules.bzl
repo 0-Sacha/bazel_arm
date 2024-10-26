@@ -1,35 +1,36 @@
 ""
 
-load("@bazel_arm//:registry.bzl", "ARM_REGISTRY")
 load("@bazel_utilities//toolchains:extras_filegroups.bzl", "filegroup_translate_to_starlark")
-load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx", "HOST_EXTENTION")
+load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx", "HOST_EXTENSION")
 load("@bazel_utilities//toolchains:registry.bzl", "get_archive_from_registry")
+load("//:registry.bzl", "ARM_REGISTRY")
 
 def _arm_compiler_archive_impl(rctx):
     host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
     
+    registry = json.decode(rctx.attr.registry_json)
+    archive = get_archive_from_registry(registry, rctx.attr.arm_toolchain_type, rctx.attr.arm_toolchain_version)
+
     substitutions = {
         "%{rctx_name}": rctx.name,
         "%{rctx_path}": "external/{}/".format(rctx.name),
-        "%{extention}": HOST_EXTENTION[host_os],
+        "%{extension}": HOST_EXTENSION[host_os],
         "%{host_name}": host_name,
         "%{arm_toolchain_type}": rctx.attr.arm_toolchain_type,
         "%{arm_toolchain_version}": rctx.attr.arm_toolchain_version,
-        "%{compiler_version}": rctx.attr.compiler_version,
+        "%{compiler_version}": archive["details"]["compiler_version"],
     }
     rctx.template(
-        "BUILD",
-        Label("//templates:BUILD.compiler.tpl"),
+        "BUILD.bazel",
+        Label("//templates:BUILD.compiler.bazel.tpl"),
         substitutions
     )
-
-    archives = json.decode(rctx.attr.archives)
-    archive = archives[host_name]
-
+    
+    host_archive = archive["archives"][host_name]
     rctx.download_and_extract(
-        url = archive["url"],
-        sha256 = archive["sha256"],
-        stripPrefix = archive["strip_prefix"],
+        url = host_archive["url"],
+        sha256 = host_archive["sha256"],
+        stripPrefix = host_archive["strip_prefix"],
     )
 
 arm_compiler_archive = repository_rule(
@@ -37,35 +38,39 @@ arm_compiler_archive = repository_rule(
     attrs = {
         'arm_toolchain_type': attr.string(mandatory = True),
         'arm_toolchain_version': attr.string(default = "latest"),
-        'compiler_version': attr.string(mandatory = True),
-        'archives': attr.string(mandatory = True),
+        'registry_json': attr.string(mandatory = True),
     },
-    local = False,
 )
-
 
 def _arm_toolchain_impl(rctx):
     host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
 
-    toolchain_id = "{}_{}".format(rctx.attr.arm_toolchain_type, rctx.attr.compiler_version)
+    registry = json.decode(rctx.attr.registry_json)
+    archive = get_archive_from_registry(registry, rctx.attr.arm_toolchain_type, rctx.attr.arm_toolchain_version)
+
+    toolchain_id = "{}_{}".format(rctx.attr.arm_toolchain_type, archive["details"]["compiler_version"])
 
     toolchain_path = "external/{}/".format(rctx.name)
     compiler_package = ""
+    compiler_full_package = "@@{}//".format(rctx.name)
     compiler_package_path = toolchain_path
-    if rctx.attr.local_download == False:
-        compiler_package = "@{}//".format(rctx.attr.compiler_package_name)
-        compiler_package_path = "external/{}/".format(rctx.attr.compiler_package_name)
+    if rctx.attr.compiler_archive_package != None and rctx.attr.compiler_archive_package != "":
+        compiler_package = "@@{}//".format(rctx.attr.compiler_archive_package.repo_name)
+        compiler_full_package = compiler_package
+        compiler_package_path = rctx.attr.compiler_archive_package.workspace_root + "/"
 
     substitutions = {
+        "%{name}": rctx.name,
         "%{rctx_name}": rctx.name,
         "%{rctx_path}": toolchain_path,
-        "%{extention}": HOST_EXTENTION[host_os],
+        "%{extension}": HOST_EXTENSION[host_os],
         "%{host_name}": host_name,
         "%{toolchain_id}": toolchain_id,
         "%{arm_toolchain_type}": rctx.attr.arm_toolchain_type,
         "%{arm_toolchain_version}": rctx.attr.arm_toolchain_version,
-        "%{compiler_version}": rctx.attr.compiler_version,
+        "%{compiler_version}": archive["details"]["compiler_version"],
         "%{compiler_package}": compiler_package,
+        "%{compiler_full_package}": compiler_full_package,
         "%{compiler_package_path}": compiler_package_path,
 
         "%{add_toolchain_linkdirs}": json.encode(rctx.attr.add_toolchain_linkdirs),
@@ -80,13 +85,18 @@ def _arm_toolchain_impl(rctx):
         "%{defines}": json.encode(rctx.attr.defines),
         "%{includedirs}": json.encode(rctx.attr.includedirs),
         "%{linkdirs}": json.encode(rctx.attr.linkdirs),
-        "%{toolchain_libs}": json.encode(rctx.attr.toolchain_libs),
+        "%{linklibs}": json.encode(rctx.attr.linklibs),
+        # dbg / opt
+        "%{dbg_copts}": json.encode(rctx.attr.dbg_copts),
+        "%{dbg_linkopts}": json.encode(rctx.attr.dbg_linkopts),
+        "%{opt_copts}": json.encode(rctx.attr.opt_copts),
+        "%{opt_linkopts}": json.encode(rctx.attr.opt_linkopts),
 
-        "%{toolchain_extras_filegroups}": json.encode(filegroup_translate_to_starlark(rctx.attr.toolchain_extras_filegroups)),
+        "%{toolchain_extras_filegroups}": json.encode(filegroup_translate_to_starlark(rctx.attr.toolchain_extras_filegroups), ),
     }
     rctx.template(
-        "BUILD",
-        Label("//templates:BUILD.tpl"),
+        "BUILD.bazel",
+        Label("//templates:BUILD.bazel.tpl"),
         substitutions
     )
     rctx.template(
@@ -100,14 +110,12 @@ def _arm_toolchain_impl(rctx):
         substitutions
     )
 
-    archives = json.decode(rctx.attr.archives)
-    archive = archives[host_name]
-
-    if rctx.attr.local_download:
+    host_archive = archive["archives"][host_name]
+    if rctx.attr.compiler_archive_package == None or rctx.attr.compiler_archive_package == "":
         rctx.download_and_extract(
-            url = archive["url"],
-            sha256 = archive["sha256"],
-            stripPrefix = archive["strip_prefix"],
+            url = host_archive["url"],
+            sha256 = host_archive["sha256"],
+            stripPrefix = host_archive["strip_prefix"],
         )
 
 _arm_toolchain = repository_rule(
@@ -115,11 +123,9 @@ _arm_toolchain = repository_rule(
     attrs = {
         'arm_toolchain_type': attr.string(mandatory = True),
         'arm_toolchain_version': attr.string(default = "latest"),
-        'compiler_version': attr.string(mandatory = True),
 
-        'local_download': attr.bool(default = True),
-        'archives': attr.string(mandatory = True),
-        'compiler_package_name': attr.string(default = "//"),
+        'registry_json': attr.string(mandatory = True),
+        'compiler_archive_package': attr.label(default = None),
 
         'add_toolchain_linkdirs': attr.bool(default = True),
 
@@ -133,11 +139,15 @@ _arm_toolchain = repository_rule(
         'defines': attr.string_list(default = []),
         'includedirs': attr.string_list(default = []),
         'linkdirs': attr.string_list(default = []),
-        'toolchain_libs': attr.string_list(default = []),
+        'linklibs': attr.string_list(default = []),
+        # dbg / opt
+        'dbg_copts': attr.string_list(default = []),
+        'dbg_linkopts': attr.string_list(default = []),
+        'opt_copts': attr.string_list(default = []),
+        'opt_linkopts': attr.string_list(default = []),
 
         'toolchain_extras_filegroups': attr.label_list(default = []),
     },
-    local = False,
 )
 
 def arm_toolchain(
@@ -155,16 +165,22 @@ def arm_toolchain(
         defines = [],
         includedirs = [],
         linkdirs = [],
-        toolchain_libs = [],
+        linklibs = [],
+        # dbg / opt
+        dbg_copts = [],
+        dbg_linkopts = [],
+        opt_copts = [],
+        opt_linkopts = [],
+
+        specs = [],
+
+        add_toolchain_linkdirs = True,
 
         toolchain_extras_filegroups = [],
         
-        local_download = True,
         registry = ARM_REGISTRY,
 
-        auto_register_toolchain = True,
-
-        add_toolchain_linkdirs = True
+        compiler_archive_package = None,
     ):
     """arm Toolchain
 
@@ -185,40 +201,35 @@ def arm_toolchain(
         defines: defines
         includedirs: includedirs
         linkdirs: linkdirs
-        toolchain_libs: toolchain_libs
+        # dbg / opt
+        linklibs: linklibs
+        dbg_copts: dbg_copts
+        dbg_linkopts: dbg_linkopts
+        opt_copts: opt_copts
+        opt_linkopts: opt_linkopts
 
-        toolchain_extras_filegroups: filegroup added to the cc_toolchain rule to get access to thoses files when sandboxed
-
-        local_download: wether the archive should be downloaded in the same repository (True) or in its own repo
-        registry: The arm registry to use, to allow close environement to provide their own mirroir/url
-
-        auto_register_toolchain: If the toolchain is registered to bazel using `register_toolchains
+        specs: specs for the compiler (nano, nosys, ...)
 
         add_toolchain_linkdirs: If the toolchain linkdirs are added to the compile command (aka: -L...). This shown some issue: when this is enable stm32 won't boot (TODO)
+        
+        toolchain_extras_filegroups: filegroup added to the cc_toolchain rule to get access to thoses files when sandboxed
+
+        registry: The arm registry to use, to allow close environement to provide their own mirroir/url
+
+        compiler_archive_package:  The arm archive to use. If none are provided, one will be defined automatically
     """
-    compiler_package_name = ""
+    if registry == None:
+        registry = ARM_REGISTRY
 
-    archive = get_archive_from_registry(registry, arm_toolchain_type, arm_toolchain_version)
-
-    if local_download == False:
-        compiler_package_name = "archive_{}_{}".format(arm_toolchain_type, arm_toolchain_version)
-        arm_compiler_archive(
-            name = compiler_package_name,
-            arm_toolchain_type = arm_toolchain_type,
-            arm_toolchain_version = arm_toolchain_version,
-            compiler_version = archive["details"]["compiler_version"],
-            archives = json.encode(archive["archives"]),
-        )
+    linkopts = linkopts + [ "--specs={}.specs".format(spec) for spec in specs ]
 
     _arm_toolchain(
         name = name,
         arm_toolchain_type = arm_toolchain_type,
         arm_toolchain_version = arm_toolchain_version,
-        compiler_version = archive["details"]["compiler_version"],
 
-        local_download = local_download,
-        archives = json.encode(archive["archives"]),
-        compiler_package_name = compiler_package_name,
+        registry_json = json.encode(registry),
+        compiler_archive_package = compiler_archive_package,
 
         add_toolchain_linkdirs = add_toolchain_linkdirs,
 
@@ -232,10 +243,12 @@ def arm_toolchain(
         defines = defines,
         includedirs = includedirs,
         linkdirs = linkdirs,
-        toolchain_libs = toolchain_libs,
+        linklibs = linklibs,
+        # dbg / opt
+        dbg_copts = dbg_copts,
+        dbg_linkopts = dbg_linkopts,
+        opt_copts = opt_copts,
+        opt_linkopts = opt_linkopts,
 
         toolchain_extras_filegroups = toolchain_extras_filegroups,
     )
-
-    if auto_register_toolchain:
-        native.register_toolchains("@{}//:toolchain_{}_{}".format(name, arm_toolchain_type, archive["details"]["compiler_version"]))
