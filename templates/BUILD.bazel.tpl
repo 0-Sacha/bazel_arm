@@ -5,7 +5,7 @@ load("@bazel_utilities//toolchains:cc_toolchain_config.bzl", "cc_toolchain_confi
 package(default_visibility = ["//visibility:public"])
 
 cc_toolchain_config(
-    name = "cc_toolchain_config_%{toolchain_id}",
+    name = "cc_config_%{toolchain_id}",
     toolchain_identifier = "%{toolchain_id}",
 
     compiler_type = "gcc",
@@ -34,13 +34,17 @@ cc_toolchain_config(
         "%{compiler_package_path}%{arm_toolchain_type}/include",
         "%{compiler_package_path}lib/gcc/%{arm_toolchain_type}/%{compiler_version}/include",
         "%{compiler_package_path}lib/gcc/%{arm_toolchain_type}/%{compiler_version}/include-fixed",
-        "%{compiler_package_path}%{arm_toolchain_type}/include/c++/%{compiler_version}/",
+        
+        "%{compiler_package_path}%{arm_toolchain_type}/include/c++/%{compiler_version}",
         "%{compiler_package_path}%{arm_toolchain_type}/include/c++/%{compiler_version}/%{arm_toolchain_type}",
     ],
 
     copts = %{copts},
     conlyopts = %{conlyopts},
-    cxxopts = %{cxxopts},
+    cxxopts = %{cxxopts} + [
+        "-isystem%{compiler_package_path}%{arm_toolchain_type}/include/c++/%{compiler_version}",
+        "-isystem%{compiler_package_path}%{arm_toolchain_type}/include/c++/%{compiler_version}/%{arm_toolchain_type}",
+    ],
     linkopts = %{linkopts},
     defines = %{defines},
     includedirs = %{includedirs},
@@ -48,13 +52,18 @@ cc_toolchain_config(
             "%{compiler_package_path}%{arm_toolchain_type}/lib",
             "%{compiler_package_path}lib/gcc/%{arm_toolchain_type}/%{compiler_version}",
         ] if "%{add_toolchain_linkdirs}" == "true" else []),
-    toolchain_libs = %{toolchain_libs},
+    linklibs = %{linklibs},
+    # dbg / opt
+    dbg_copts = %{dbg_copts},
+    dbg_linkopts = %{dbg_linkopts},
+    opt_copts = %{opt_copts},
+    opt_linkopts = %{opt_linkopts},
 )
 
 cc_toolchain(
     name = "cc_toolchain_%{toolchain_id}",
     toolchain_identifier = "%{toolchain_id}",
-    toolchain_config = ":cc_toolchain_config_%{toolchain_id}",
+    toolchain_config = ":cc_config_%{toolchain_id}",
     
     # TODO: Current fix for Sandboxed build # "%{compiler_package}:all_files",
     all_files = ":toolchain_every_files",
@@ -73,7 +82,7 @@ cc_toolchain(
 )
 
 toolchain(
-    name = "toolchain_%{toolchain_id}",
+    name = "toolchain",
     toolchain = ":cc_toolchain_%{toolchain_id}",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 
@@ -85,7 +94,7 @@ toolchain(
 filegroup(
     name = "toolchain_every_files",
     srcs = [
-        "%{compiler_package}:toolchain_internal_every_files",
+        "%{compiler_full_package}:toolchain_internal_every_files",
     ] + %{toolchain_extras_filegroups}
 )
 
@@ -184,68 +193,69 @@ filegroup(
     ]),
 )
 
+
 filegroup(
     name = "all_files",
     srcs = [
-        ":toolchain_includes",
-        ":toolchain_libs",
-        ":toolchain_bins",
+        "%{compiler_package}:toolchain_includes",
+        "%{compiler_package}:toolchain_libs",
+        "%{compiler_package}:toolchain_bins",
     ],
 )
 
 filegroup(
     name = "compiler_files",
     srcs = [
-        ":toolchain_includes",
-        ":cpp",
-        ":cc",
-        ":cxx",
+        "%{compiler_package}:toolchain_includes",
+        "%{compiler_package}:cpp",
+        "%{compiler_package}:cc",
+        "%{compiler_package}:cxx",
     ],
 )
 
 filegroup(
     name = "linker_files",
     srcs = [
-        ":toolchain_libs",
-        ":cc",
-        ":cxx",
-        ":ld",
-        ":ar",
+        "%{compiler_package}:toolchain_libs",
+        "%{compiler_package}:cc",
+        "%{compiler_package}:cxx",
+        "%{compiler_package}:ld",
+        "%{compiler_package}:ar",
     ],
 )
 
 filegroup(
     name = "coverage_files",
     srcs = [
-        ":toolchain_includes",
-        ":toolchain_libs",
-        ":cc",
-        ":cxx",
-        ":ld",
-        ":cov",
+        "%{compiler_package}:toolchain_includes",
+        "%{compiler_package}:toolchain_libs",
+        "%{compiler_package}:cc",
+        "%{compiler_package}:cxx",
+        "%{compiler_package}:ld",
+        "%{compiler_package}:cov",
     ],
 )
 
 filegroup(
     name = "compiler_components",
     srcs = [
-        ":cpp",
-        ":cc",
-        ":cxx",
-        ":ar",
-        ":ld",
+        "%{compiler_package}:cpp",
+        "%{compiler_package}:cc",
+        "%{compiler_package}:cxx",
+        "%{compiler_package}:ar",
+        "%{compiler_package}:ld",
 
-        ":objcopy",
-        ":strip",
+        "%{compiler_package}:objcopy",
+        "%{compiler_package}:strip",
 
-        ":cov",
+        "%{compiler_package}:cov",
 
-        ":nm",
-        ":objdump",
-        ":as",
-        ":size",
-        ":dwp",
+        "%{compiler_package}:nm",
+        "%{compiler_package}:objdump",
+        "%{compiler_package}:as",
+        "%{compiler_package}:size",
+        "%{compiler_package}:dwp",
         
-        ":dbg",
+        "%{compiler_package}:dbg",
     ],
 )
