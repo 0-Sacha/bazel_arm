@@ -2,72 +2,74 @@
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "cpp",
-    srcs = ["bin/%{arm_toolchain_type}-cpp%{extension}"],
-)
-filegroup(
-    name = "cc",
-    srcs = ["bin/%{arm_toolchain_type}-gcc%{extension}"],
-)
-filegroup(
-    name = "cxx",
-    srcs = ["bin/%{arm_toolchain_type}-g++%{extension}"],
-)
-filegroup(
-    name = "as",
-    srcs = ["bin/%{arm_toolchain_type}-as%{extension}"],
-)
-filegroup(
-    name = "ar",
-    srcs = ["bin/%{arm_toolchain_type}-ar%{extension}"],
-)
-filegroup(
-    name = "ld",
-    srcs = ["bin/%{arm_toolchain_type}-ld%{extension}"],
-)
-
-filegroup(
-    name = "objcopy",
-    srcs = ["bin/%{arm_toolchain_type}-objcopy%{extension}"],
-)
-filegroup(
-    name = "strip",
-    srcs = ["bin/%{arm_toolchain_type}-strip%{extension}"],
-)
-
-filegroup(
-    name = "cov",
-    srcs = ["bin/%{arm_toolchain_type}-gcov%{extension}"],
-)
-
-filegroup(
-    name = "size",
-    srcs = ["bin/%{arm_toolchain_type}-size%{extension}"],
-)
-filegroup(
-    name = "nm",
-    srcs = ["bin/%{arm_toolchain_type}-nm%{extension}"],
-)
-filegroup(
-    name = "objdump",
-    srcs = ["bin/%{arm_toolchain_type}-objdump%{extension}"],
-)
-filegroup(
-    name = "dwp",
-    srcs = ["bin/%{arm_toolchain_type}-dwp%{extension}"],
-)
-
-filegroup(
-    name = "dbg",
-    srcs = ["bin/%{arm_toolchain_type}-gdb%{extension}"],
-)
-
 
 filegroup(
     name = "toolchain_internal_every_files",
     srcs = glob(["**"]),
 )
+
+
+filegroup(
+    name = "cpp",
+    srcs = ["bin/%{toolchain_type}-cpp%{extension}"],
+)
+filegroup(
+    name = "cc",
+    srcs = ["bin/%{toolchain_type}-gcc%{extension}"],
+)
+filegroup(
+    name = "cxx",
+    srcs = ["bin/%{toolchain_type}-g++%{extension}"],
+)
+filegroup(
+    name = "as",
+    srcs = ["bin/%{toolchain_type}-as%{extension}"],
+)
+filegroup(
+    name = "ar",
+    srcs = ["bin/%{toolchain_type}-ar%{extension}"],
+)
+filegroup(
+    name = "ld",
+    srcs = ["bin/%{toolchain_type}-ld%{extension}"],
+)
+
+filegroup(
+    name = "objcopy",
+    srcs = ["bin/%{toolchain_type}-objcopy%{extension}"],
+)
+filegroup(
+    name = "strip",
+    srcs = ["bin/%{toolchain_type}-strip%{extension}"],
+)
+
+filegroup(
+    name = "cov",
+    srcs = ["bin/%{toolchain_type}-gcov%{extension}"],
+)
+
+filegroup(
+    name = "size",
+    srcs = ["bin/%{toolchain_type}-size%{extension}"],
+)
+filegroup(
+    name = "nm",
+    srcs = ["bin/%{toolchain_type}-nm%{extension}"],
+)
+filegroup(
+    name = "objdump",
+    srcs = ["bin/%{toolchain_type}-objdump%{extension}"],
+)
+filegroup(
+    name = "dwp",
+    srcs = ["bin/%{toolchain_type}-dwp%{extension}"],
+)
+
+filegroup(
+    name = "dbg",
+    srcs = ["bin/%{toolchain_type}-gdb%{extension}"],
+)
+
 
 filegroup(
     name = "toolchain_includes",
