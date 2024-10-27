@@ -31,26 +31,26 @@ cc_toolchain_config(
     },
 
     cxx_builtin_include_directories = [
-        "%{compiler_package_path}%{arm_toolchain_type}/include",
-        "%{compiler_package_path}lib/gcc/%{arm_toolchain_type}/%{compiler_version}/include",
-        "%{compiler_package_path}lib/gcc/%{arm_toolchain_type}/%{compiler_version}/include-fixed",
+        "%{compiler_package_path}%{toolchain_type}/include",
+        "%{compiler_package_path}lib/gcc/%{toolchain_type}/%{compiler_version}/include",
+        "%{compiler_package_path}lib/gcc/%{toolchain_type}/%{compiler_version}/include-fixed",
         
-        "%{compiler_package_path}%{arm_toolchain_type}/include/c++/%{compiler_version}",
-        "%{compiler_package_path}%{arm_toolchain_type}/include/c++/%{compiler_version}/%{arm_toolchain_type}",
+        "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}",
+        "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}/%{toolchain_type}",
     ],
 
     copts = %{copts},
     conlyopts = %{conlyopts},
     cxxopts = %{cxxopts} + [
-        "-isystem%{compiler_package_path}%{arm_toolchain_type}/include/c++/%{compiler_version}",
-        "-isystem%{compiler_package_path}%{arm_toolchain_type}/include/c++/%{compiler_version}/%{arm_toolchain_type}",
+        "-isystem%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}",
+        "-isystem%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}/%{toolchain_type}",
     ],
     linkopts = %{linkopts},
     defines = %{defines},
     includedirs = %{includedirs},
     linkdirs = %{linkdirs} + ([
-            "%{compiler_package_path}%{arm_toolchain_type}/lib",
-            "%{compiler_package_path}lib/gcc/%{arm_toolchain_type}/%{compiler_version}",
+            "%{compiler_package_path}%{toolchain_type}/lib",
+            "%{compiler_package_path}lib/gcc/%{toolchain_type}/%{compiler_version}",
         ] if "%{add_toolchain_linkdirs}" == "true" else []),
     linklibs = %{linklibs},
     # dbg / opt
@@ -94,77 +94,77 @@ toolchain(
 filegroup(
     name = "toolchain_every_files",
     srcs = [
-        "%{compiler_full_package}:toolchain_internal_every_files",
+        "%{compiler_package}:toolchain_internal_every_files",
     ] + %{toolchain_extras_filegroups}
 )
-
-
-filegroup(
-    name = "cpp",
-    srcs = ["bin/%{arm_toolchain_type}-cpp%{extension}"],
-)
-filegroup(
-    name = "cc",
-    srcs = ["bin/%{arm_toolchain_type}-gcc%{extension}"],
-)
-filegroup(
-    name = "cxx",
-    srcs = ["bin/%{arm_toolchain_type}-g++%{extension}"],
-)
-filegroup(
-    name = "as",
-    srcs = ["bin/%{arm_toolchain_type}-as%{extension}"],
-)
-filegroup(
-    name = "ar",
-    srcs = ["bin/%{arm_toolchain_type}-ar%{extension}"],
-)
-filegroup(
-    name = "ld",
-    srcs = ["bin/%{arm_toolchain_type}-ld%{extension}"],
-)
-
-filegroup(
-    name = "objcopy",
-    srcs = ["bin/%{arm_toolchain_type}-objcopy%{extension}"],
-)
-filegroup(
-    name = "strip",
-    srcs = ["bin/%{arm_toolchain_type}-strip%{extension}"],
-)
-
-filegroup(
-    name = "cov",
-    srcs = ["bin/%{arm_toolchain_type}-gcov%{extension}"],
-)
-
-filegroup(
-    name = "size",
-    srcs = ["bin/%{arm_toolchain_type}-size%{extension}"],
-)
-filegroup(
-    name = "nm",
-    srcs = ["bin/%{arm_toolchain_type}-nm%{extension}"],
-)
-filegroup(
-    name = "objdump",
-    srcs = ["bin/%{arm_toolchain_type}-objdump%{extension}"],
-)
-filegroup(
-    name = "dwp",
-    srcs = ["bin/%{arm_toolchain_type}-dwp%{extension}"],
-)
-
-filegroup(
-    name = "dbg",
-    srcs = ["bin/%{arm_toolchain_type}-gdb%{extension}"],
-)
-
 
 filegroup(
     name = "toolchain_internal_every_files",
     srcs = glob(["**"]),
 )
+
+
+filegroup(
+    name = "cpp",
+    srcs = ["bin/%{toolchain_type}-cpp%{extension}"],
+)
+filegroup(
+    name = "cc",
+    srcs = ["bin/%{toolchain_type}-gcc%{extension}"],
+)
+filegroup(
+    name = "cxx",
+    srcs = ["bin/%{toolchain_type}-g++%{extension}"],
+)
+filegroup(
+    name = "as",
+    srcs = ["bin/%{toolchain_type}-as%{extension}"],
+)
+filegroup(
+    name = "ar",
+    srcs = ["bin/%{toolchain_type}-ar%{extension}"],
+)
+filegroup(
+    name = "ld",
+    srcs = ["bin/%{toolchain_type}-ld%{extension}"],
+)
+
+filegroup(
+    name = "objcopy",
+    srcs = ["bin/%{toolchain_type}-objcopy%{extension}"],
+)
+filegroup(
+    name = "strip",
+    srcs = ["bin/%{toolchain_type}-strip%{extension}"],
+)
+
+filegroup(
+    name = "cov",
+    srcs = ["bin/%{toolchain_type}-gcov%{extension}"],
+)
+
+filegroup(
+    name = "size",
+    srcs = ["bin/%{toolchain_type}-size%{extension}"],
+)
+filegroup(
+    name = "nm",
+    srcs = ["bin/%{toolchain_type}-nm%{extension}"],
+)
+filegroup(
+    name = "objdump",
+    srcs = ["bin/%{toolchain_type}-objdump%{extension}"],
+)
+filegroup(
+    name = "dwp",
+    srcs = ["bin/%{toolchain_type}-dwp%{extension}"],
+)
+
+filegroup(
+    name = "dbg",
+    srcs = ["bin/%{toolchain_type}-gdb%{extension}"],
+)
+
 
 filegroup(
     name = "toolchain_includes",
