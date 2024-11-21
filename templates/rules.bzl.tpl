@@ -3,20 +3,18 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 def _arm_all_files_impl(ctx):
-    ctx.actions.run(
+    ctx.actions.run_shell(
         inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.elf ],
-        executable = "cp",
-        arguments = [
-            ctx.file.dep.path,
-            ctx.outputs.elf.path
-        ],
+        command = "cp {dep} {elf}".format(
+            dep = ctx.file.dep.path,
+            elf = ctx.outputs.elf.path,
+        ),
     )
     ctx.actions.run(
         inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.bin ],
-        tools = [ ctx.file.objcopy ],
-        executable = ctx.file.objcopy.path,
+        executable = ctx.file.objcopy,
         arguments = [
             "-O",
             "binary",
@@ -28,8 +26,7 @@ def _arm_all_files_impl(ctx):
     ctx.actions.run(
         inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.hex ],
-        tools = [ ctx.file.objcopy ],
-        executable = ctx.file.objcopy.path,
+        executable = ctx.file.objcopy,
         arguments = [
             "-O",
             "ihex",
@@ -40,6 +37,7 @@ def _arm_all_files_impl(ctx):
     ctx.actions.run_shell(
         inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.dmp ],
+        tools = [ ctx.file.objdump ],
         command = "{objdump} {flags} {deps} > {out}".format(
             objdump = ctx.file.objdump.path,
             flags = "-x --syms",
@@ -50,6 +48,7 @@ def _arm_all_files_impl(ctx):
     ctx.actions.run_shell(
         inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.asm ],
+        tools = [ ctx.file.objdump ],
         command = "{objdump} {flags} {deps} > {out}".format(
             objdump = ctx.file.objdump.path,
             flags = "-d",

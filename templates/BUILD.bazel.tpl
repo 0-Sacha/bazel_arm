@@ -30,21 +30,14 @@ cc_toolchain_config(
         "%{compiler_package}:dbg": "dbg",
     },
 
-    cxx_builtin_include_directories = [
-        "%{compiler_package_path}%{toolchain_type}/include",
-        "%{compiler_package_path}lib/gcc/%{toolchain_type}/%{compiler_version}/include",
-        "%{compiler_package_path}lib/gcc/%{toolchain_type}/%{compiler_version}/include-fixed",
-        
+    toolchain_builtin_includedirs = [
         "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}",
         "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}/%{toolchain_type}",
     ],
 
     copts = %{copts},
     conlyopts = %{conlyopts},
-    cxxopts = %{cxxopts} + [
-        "-isystem%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}",
-        "-isystem%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}/%{toolchain_type}",
-    ],
+    cxxopts = %{cxxopts},
     linkopts = %{linkopts},
     defines = %{defines},
     includedirs = %{includedirs},
