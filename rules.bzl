@@ -8,6 +8,8 @@ load("//:registry.bzl", "ARM_REGISTRY")
 
 def _arm_compiler_archive_impl(rctx):
     host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
+    if rctx.attr.override_host_name != "" and rctx.attr.override_host_name != "local":
+        host_os, _, host_name = split_host_name(rctx.attr.override_host_name)
     
     registry = json.decode(rctx.attr.registry_json)
     archive = get_archive_from_registry(registry, rctx.attr.toolchain_type, rctx.attr.toolchain_version)
@@ -37,6 +39,8 @@ def _arm_compiler_archive_impl(rctx):
 arm_compiler_archive = repository_rule(
     implementation = _arm_compiler_archive_impl,
     attrs = {
+        'override_host_name': attr.string(default = "local"),
+
         'toolchain_type': attr.string(mandatory = True),
         'toolchain_version': attr.string(default = "latest"),
         'registry_json': attr.string(mandatory = True),
@@ -45,6 +49,8 @@ arm_compiler_archive = repository_rule(
 
 def _arm_toolchain_impl(rctx):
     host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
+    if rctx.attr.override_host_name != "" and rctx.attr.override_host_name != "local":
+        host_os, _, host_name = split_host_name(rctx.attr.override_host_name)
 
     registry = json.decode(rctx.attr.registry_json)
     archive = get_archive_from_registry(registry, rctx.attr.toolchain_type, rctx.attr.toolchain_version)
@@ -122,6 +128,8 @@ def _arm_toolchain_impl(rctx):
 _arm_toolchain = repository_rule(
     implementation = _arm_toolchain_impl,
     attrs = {
+        'override_host_name': attr.string(default = "local"),
+
         'toolchain_type': attr.string(mandatory = True),
         'toolchain_version': attr.string(default = "latest"),
 
@@ -183,6 +191,8 @@ def arm_toolchain(
         registry = ARM_REGISTRY,
 
         compiler_archive_package = None,
+
+        override_host_name = "local",
     ):
     """arm Toolchain
 
@@ -219,6 +229,8 @@ def arm_toolchain(
         registry: The arm registry to use, to allow close environement to provide their own mirroir/url
 
         compiler_archive_package: The arm archive to use. If none are provided, one will be defined automatically
+
+        override_host_name: override_host_name
     """
     if registry == None:
         registry = ARM_REGISTRY
@@ -254,23 +266,27 @@ def arm_toolchain(
         toolchain_extras_filegroups = toolchain_extras_filegroups,
 
         compiler_archive_package = compiler_archive_package,
+
+        override_host_name = override_host_name,
     )
 
 def _arm_toolchain_extension_impl(module_ctx):
     toolchain_versions_list = [
-        toolchain.arm_version
+        (toolchain.override_host_name, toolchain.arm_version)
         for mod in module_ctx.modules 
         for toolchain in mod.tags.arm_toolchain
     ]
     if len(toolchain_versions_list) == 0:
-        toolchain_versions_list.append("latest")
+        winlibs_toolchain_list.append(("local", "latest"))
     toolchain_versions_list = sets.to_list(sets.make(toolchain_versions_list))
+
     arm_registry = ARM_REGISTRY
-    for version in toolchain_versions_list:
+    for toolchain_version in toolchain_versions_list:
         arm_compiler_archive(
-            name = "archive_arm-" + version,
-            arm_version = version,
+            name = "archive_arm-{}-{}".format(toolchains_version[0], toolchains_version[1]),
+            arm_version = toolchains_version[1],
             registry_json = json.encode(arm_registry),
+            override_host_name = toolchains_version[0],
         )
     
     for mod in module_ctx.modules:
@@ -293,13 +309,17 @@ def _arm_toolchain_extension_impl(module_ctx):
 
                 toolchain_extras_filegroups = toolchain.toolchain_extras_filegroups,
 
-                compiler_archive_package = "@archive_arm-" + toolchain.arm_version,
+                compiler_archive_package = "@archive_arm-{}-{}".format(toolchain.override_host_name, toolchain.arm_version),
+
+                override_host_name = toolchain.override_host_name,
             )
     
 arm_toolchain_extension = module_extension(
     implementation = _arm_toolchain_extension_impl,
     tag_classes = {
         "arm_toolchain": tag_class(attrs = {
+            'override_host_name': attr.string(default = "local"),
+
             'name': attr.string(mandatory = True),
             
             'toolchain_type': attr.string(mandatory = True),
