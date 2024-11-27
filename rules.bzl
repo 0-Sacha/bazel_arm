@@ -2,7 +2,7 @@
 
 load("@bazel_skylib//lib:sets.bzl", "sets")
 load("@bazel_utilities//toolchains:extras_filegroups.bzl", "filegroup_translate_to_starlark")
-load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx", "HOST_EXTENSION")
+load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx", "split_host_name", "HOST_EXTENSION")
 load("@bazel_utilities//toolchains:registry.bzl", "get_archive_from_registry")
 load("//:registry.bzl", "ARM_REGISTRY")
 
@@ -272,28 +272,30 @@ def arm_toolchain(
 
 def _arm_toolchain_extension_impl(module_ctx):
     toolchain_versions_list = [
-        (toolchain.override_host_name, toolchain.arm_version)
+        (toolchain.override_host_name, toolchain.toolchain_type, toolchain.toolchain_version)
         for mod in module_ctx.modules 
         for toolchain in mod.tags.arm_toolchain
     ]
     if len(toolchain_versions_list) == 0:
-        winlibs_toolchain_list.append(("local", "latest"))
+        print("Should not end here ! You probably forgotten to put a mandatory argument to the arm_toolchain rule <maybe toolchain_type>")
     toolchain_versions_list = sets.to_list(sets.make(toolchain_versions_list))
 
     arm_registry = ARM_REGISTRY
     for toolchain_version in toolchain_versions_list:
         arm_compiler_archive(
-            name = "archive_arm-{}-{}".format(toolchains_version[0], toolchains_version[1]),
-            arm_version = toolchains_version[1],
+            name = "archive_arm-{}-{}-{}".format(toolchain_version[0], toolchain_version[1], toolchain_version[2]),
+            toolchain_type = toolchain_version[1],
+            toolchain_version = toolchain_version[2],
             registry_json = json.encode(arm_registry),
-            override_host_name = toolchains_version[0],
+            override_host_name = toolchain_version[0],
         )
     
     for mod in module_ctx.modules:
         for toolchain in mod.tags.arm_toolchain:
             arm_toolchain(
                 name = toolchain.name,
-                arm_version = toolchain.arm_version,
+                toolchain_type = toolchain.toolchain_type,
+                toolchain_version = toolchain.toolchain_version,
 
                 exec_compatible_with = toolchain.exec_compatible_with,
                 target_compatible_with = toolchain.target_compatible_with,
@@ -309,7 +311,7 @@ def _arm_toolchain_extension_impl(module_ctx):
 
                 toolchain_extras_filegroups = toolchain.toolchain_extras_filegroups,
 
-                compiler_archive_package = "@archive_arm-{}-{}".format(toolchain.override_host_name, toolchain.arm_version),
+                compiler_archive_package = "@archive_arm-{}-{}-{}".format(toolchain.override_host_name, toolchain.toolchain_type, toolchain.toolchain_version),
 
                 override_host_name = toolchain.override_host_name,
             )

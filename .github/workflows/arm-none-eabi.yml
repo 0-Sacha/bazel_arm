@@ -21,7 +21,7 @@ jobs:
         key: bazel
     - name: Build HelloWorld
       run: bazelisk build //HelloWorld:HelloWorld
-      working-directory: Examples
+      working-directory: Examples/arm-none-eabi
 
   ubuntu-latest:
     runs-on: ubuntu-latest
@@ -35,4 +35,4 @@ jobs:
         key: bazel
     - name: Build HelloWorld
       run: bazelisk build //HelloWorld:HelloWorld
-      working-directory: Examples
+      working-directory: Examples/arm-none-eabi
