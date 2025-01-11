@@ -5,7 +5,7 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "toolchain_internal_every_files",
-    srcs = glob(["**"]),
+    srcs = glob(["**"], allow_empty = True),
 )
 
 
@@ -78,7 +78,7 @@ filegroup(
         "lib/gcc/arm-none-eabi/%{compiler_version}/include-fixed/**",
         "arm-none-eabi/include/**",
         "include/**",
-    ]),
+    ], allow_empty = True),
 )
 
 filegroup(
@@ -87,7 +87,7 @@ filegroup(
         "lib/gcc/arm-none-eabi/%{compiler_version}/*",
         "arm-none-eabi/lib/*",
         "lib/*",
-    ]),
+    ], allow_empty = True),
 )
 
 filegroup(
@@ -95,5 +95,5 @@ filegroup(
     srcs = glob([
         "bin/*%{extension}",
         "arm-none-eabi/bin/*%{extension}",
-    ]),
+    ], allow_empty = True),
 )
