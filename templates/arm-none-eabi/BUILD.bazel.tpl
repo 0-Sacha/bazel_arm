@@ -162,9 +162,9 @@ filegroup(
 filegroup(
     name = "toolchain_includes",
     srcs = glob([
-        "lib/gcc/arm-none-eabi/%{compiler_version}/include/*",
-        "lib/gcc/arm-none-eabi/%{compiler_version}/include-fixed/*",
-        "arm-none-eabi/include/*",
+        "lib/gcc/%{toolchain_type}/%{compiler_version}/include/*",
+        "lib/gcc/%{toolchain_type}/%{compiler_version}/include-fixed/*",
+        "%{toolchain_type}/include/*",
         "include/*",
     ], allow_empty = True),
 )
@@ -172,8 +172,8 @@ filegroup(
 filegroup(
     name = "toolchain_libs",
     srcs = glob([
-        "lib/gcc/arm-none-eabi/%{compiler_version}/*",
-        "arm-none-eabi/lib/*",
+        "lib/gcc/%{toolchain_type}/%{compiler_version}/*",
+        "%{toolchain_type}/lib/*",
         "lib/*",
     ], allow_empty = True),
 )
@@ -182,7 +182,7 @@ filegroup(
     name = "toolchain_bins",
     srcs = glob([
         "bin/*%{extension}",
-        "arm-none-eabi/bin/*%{extension}",
+        "%{toolchain_type}/bin/*%{extension}",
     ], allow_empty = True),
 )
 

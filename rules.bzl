@@ -25,15 +25,18 @@ def _arm_compiler_archive_impl(rctx):
     }
     rctx.template(
         "BUILD.bazel",
-        Label("//templates:BUILD.compiler.bazel.tpl"),
+        Label("//templates/{toolchain_type}:BUILD.compiler.bazel.tpl".format(toolchain_type = rctx.attr.toolchain_type)),
         substitutions
     )
     
     host_archive = archive["archives"][host_name]
+    strip_prefix = ""
+    if "strip_prefix" in host_archive:
+        strip_prefix = host_archive["strip_prefix"]
     rctx.download_and_extract(
         url = host_archive["url"],
         sha256 = host_archive["sha256"],
-        stripPrefix = host_archive["strip_prefix"],
+        stripPrefix = strip_prefix,
     )
 
 arm_compiler_archive = repository_rule(
@@ -103,26 +106,29 @@ def _arm_toolchain_impl(rctx):
     }
     rctx.template(
         "BUILD.bazel",
-        Label("//templates:BUILD.bazel.tpl"),
+        Label("//templates/{toolchain_type}:BUILD.bazel.tpl".format(toolchain_type = rctx.attr.toolchain_type)),
         substitutions
     )
     rctx.template(
         "rules.bzl",
-        Label("//templates:rules.bzl.tpl"),
+        Label("//templates/{toolchain_type}:rules.bzl.tpl".format(toolchain_type = rctx.attr.toolchain_type)),
         substitutions
     )
     rctx.template(
         "vscode.bzl",
-        Label("//templates:vscode.bzl.tpl"),
+        Label("//templates/{toolchain_type}:vscode.bzl.tpl".format(toolchain_type = rctx.attr.toolchain_type)),
         substitutions
     )
 
     if rctx.attr.compiler_archive_package == None or rctx.attr.compiler_archive_package == "":
         host_archive = archive["archives"][host_name]
+        strip_prefix = ""
+        if "strip_prefix" in host_archive:
+            strip_prefix = host_archive["strip_prefix"]
         rctx.download_and_extract(
             url = host_archive["url"],
             sha256 = host_archive["sha256"],
-            stripPrefix = host_archive["strip_prefix"],
+            stripPrefix = strip_prefix,
         )
 
 _arm_toolchain = repository_rule(
