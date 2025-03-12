@@ -14,7 +14,7 @@ bazel_dep(name = "rules_cc", version = "0.0.10")
 bazel_dep(name = "platforms", version = "0.0.10")
 
 # use the latest commit avaible
-git_override(module_name="bazel_utilities", remote="https://github.com/0-Sacha/bazel_utilities.git", commit="fbb17685ac9ba78fef914a322e6c37839dc16d4f")
+git_override(module_name="bazel_utilities", remote="https://github.com/0-Sacha/bazel_utilities.git", commit="2f7370501eb6c1d483bac7e555c52c2aab6b8163")
 git_override(module_name="bazel_arm", remote="https://github.com/0-Sacha/bazel_arm.git", commit="32db016c62be695f42cebc9be21f6cf6e3994a0d")
 
 bazel_dep(name = "bazel_utilities", version = "0.0.1", dev_dependency = True)

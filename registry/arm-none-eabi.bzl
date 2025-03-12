@@ -1,8 +1,3 @@
-"""arm registry
-"""
-
-load("@bazel_utilities//toolchains:registry.bzl", "gen_archives_registry")
-
 ARM_NONE_EABI_ARCHIVES_14_2_REL1 = {
     "toolchain": "arm-none-eabi",
     "version": "14.2.rel1",
@@ -28,13 +23,13 @@ ARM_NONE_EABI_ARCHIVES_14_2_REL1 = {
             "strip_prefix": "arm-gnu-toolchain-14.2.rel1-aarch64-arm-none-eabi",
         },
         "darwin_x86_64": {
-            "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-darwin-arm64-aarch64-none-elf.tar.xz",
+            "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-darwin-x86_64-arm-none-eabi.tar.xz",
             "sha256": "2D9E717DD4F7751D18936AE1365D25916534105EBCB7583039EFF1092B824505",
-            "strip_prefix": "arm-gnu-toolchain-14.2.Rel1-darwin-x86_64-arm-none-eabi",
+            "strip_prefix": "arm-gnu-toolchain-14.2.rel1-darwin-x86_64-arm-none-eabi",
         },
         "darwin_aarch64": {
             "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-darwin-arm64-arm-none-eabi.tar.xz",
-            "sha256": "FC111BB4BB4871E521E3C8A89BD0AF51CDDFD00FE3F526F4FAA09398B7C613F5",
+            "sha256": "C7C78FFAB9BEBFCE91D99D3C24DA6BF4B81C01E16CF551EB2FF9F25B9E0A3818",
             "strip_prefix": "arm-gnu-toolchain-14.2.rel1-darwin-arm64-arm-none-eabi",
         }
     }
@@ -64,11 +59,6 @@ ARM_NONE_EABI_ARCHIVES_13_3_REL1 = {
             "url": "https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-aarch64-arm-none-eabi.tar.xz",
             "sha256": "C8824BFFD057AFCE2259F7618254E840715F33523A3D4E4294F471208F976764",
             "strip_prefix": "arm-gnu-toolchain-13.3.rel1-aarch64-arm-none-eabi",
-        },
-        "darwin_x86_64": {
-            "url": "https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-darwin-arm64-aarch64-none-elf.tar.xz",
-            "sha256": "1AB00742D1ED0926E6F227DF39D767F8EFAB46F5250505C29CB81F548222D794",
-            "strip_prefix": "arm-gnu-toolchain-13.3.Rel1-darwin-x86_64-arm-none-eabi",
         },
         "darwin_aarch64": {
             "url": "https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-darwin-arm64-arm-none-eabi.tar.xz",
@@ -173,11 +163,3 @@ ARM_NONE_EABI_ARCHIVES_11_3_REL1 = {
         }
     }
 }
-
-ARM_REGISTRY = gen_archives_registry([
-    ARM_NONE_EABI_ARCHIVES_14_2_REL1,
-    ARM_NONE_EABI_ARCHIVES_13_3_REL1,
-    ARM_NONE_EABI_ARCHIVES_13_2_REL1,
-    ARM_NONE_EABI_ARCHIVES_12_3_REL1,
-    ARM_NONE_EABI_ARCHIVES_11_3_REL1
-])

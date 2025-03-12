@@ -74,28 +74,21 @@ filegroup(
 filegroup(
     name = "toolchain_includes",
     srcs = glob([
-        "lib/gcc/%{toolchain_type}/%{compiler_version}/include/*",
-        "lib/gcc/%{toolchain_type}/%{compiler_version}/include-fixed/*",
-        "%{toolchain_type}/include/*",
-    ], allow_empty = True),
+        "%{toolchain_type}/include/**/*",
+    ]),
 )
 
 filegroup(
     name = "toolchain_libs",
     srcs = glob([
-        # thumb folder not handled in filegroups:
-        # ---- TO DELETE "lib/gcc/%{toolchain_type}/%{compiler_version}%{thumb_abi_version_folder_path}/*",
-
+        # ilp32 folder not handled in filegroups: "lib/gcc/%{toolchain_type}/%{compiler_version}%{use_ilp32_folder}/*",
         "lib/gcc/%{toolchain_type}/%{compiler_version}/*",
-        "%{toolchain_type}/lib/*",
-    ], allow_empty = True),
+    ]),
 )
 
 filegroup(
     name = "toolchain_bins",
     srcs = glob([
         "%{toolchain_type}/bin/*%{extension}",
-        # "bin/*%{extension}",
-    ], allow_empty = True),
+    ]),
 )
-
