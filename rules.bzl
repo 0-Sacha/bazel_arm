@@ -14,14 +14,6 @@ def _arm_compiler_archive_impl(rctx):
     registry = json.decode(rctx.attr.registry_json)
     archive = get_archive_from_registry(registry, rctx.attr.toolchain_type, rctx.attr.toolchain_version)
 
-    # Theses should be deleted
-    thumb_abi_version_folder_path = rctx.attr.thumb_abi_version_folder_path
-    if thumb_abi_version_folder_path.startswith("/") == False:
-        thumb_abi_version_folder_path = "/" + thumb_abi_version_folder_path
-    use_ilp32_folder = ""
-    if rctx.attr.use_ilp32_folder == True:
-        use_ilp32_folder = "/ilp32"
-
     substitutions = {
         "%{rctx_name}": rctx.name,
         "%{rctx_path}": "external/{}/".format(rctx.name),
@@ -30,10 +22,6 @@ def _arm_compiler_archive_impl(rctx):
         "%{toolchain_type}": rctx.attr.toolchain_type,
         "%{toolchain_version}": rctx.attr.toolchain_version,
         "%{compiler_version}": archive["details"]["compiler_version"],
-
-        # Theses should be deleted
-        "%{thumb_abi_version_folder_path}": thumb_abi_version_folder_path,
-        "%{use_ilp32_folder}": use_ilp32_folder,
     }
     rctx.template(
         "BUILD.bazel",
@@ -59,10 +47,6 @@ arm_compiler_archive = repository_rule(
         'toolchain_type': attr.string(mandatory = True),
         'toolchain_version': attr.string(default = "latest"),
         'registry_json': attr.string(mandatory = True),
-
-        # Theses should be deleted
-        'thumb_abi_version_folder_path': attr.string(default = ""),
-        'use_ilp32_folder': attr.bool(default = False),
     },
 )
 
@@ -85,14 +69,6 @@ def _arm_toolchain_impl(rctx):
         compiler_full_package = compiler_package
         compiler_package_path = rctx.attr.compiler_archive_package.workspace_root + "/"
 
-    # Theses should be deleted
-    thumb_abi_version_folder_path = rctx.attr.thumb_abi_version_folder_path
-    if thumb_abi_version_folder_path.startswith("/") == False:
-        thumb_abi_version_folder_path = "/" + thumb_abi_version_folder_path
-    use_ilp32_folder = ""
-    if rctx.attr.use_ilp32_folder == True:
-        use_ilp32_folder = "/ilp32"
-
     substitutions = {
         "%{name}": rctx.name,
         "%{rctx_name}": rctx.name,
@@ -106,11 +82,6 @@ def _arm_toolchain_impl(rctx):
         "%{compiler_package}": compiler_package,
         "%{compiler_full_package}": compiler_full_package,
         "%{compiler_package_path}": compiler_package_path,
-
-        # Theses should be deleted
-        "%{add_toolchain_linkdirs}": json.encode(rctx.attr.add_toolchain_linkdirs),
-        "%{thumb_abi_version_folder_path}": thumb_abi_version_folder_path,
-        "%{use_ilp32_folder}": use_ilp32_folder,
 
         "%{exec_compatible_with}": json.encode(rctx.attr.exec_compatible_with),
         "%{target_compatible_with}": json.encode(rctx.attr.target_compatible_with),
@@ -168,11 +139,6 @@ _arm_toolchain = repository_rule(
 
         'registry_json': attr.string(mandatory = True),
 
-        # Theses should be deleted
-        'add_toolchain_linkdirs': attr.bool(default = False),
-        'thumb_abi_version_folder_path': attr.string(default = ""),
-        'use_ilp32_folder': attr.bool(default = False),
-
         'exec_compatible_with': attr.string_list(default = []),
         'target_compatible_with': attr.string_list(default = []),
 
@@ -200,11 +166,6 @@ def arm_toolchain(
         name,
         toolchain_type,
         toolchain_version = "latest",
-
-        # Theses should be deleted
-        add_toolchain_linkdirs = False,
-        thumb_abi_version_folder_path = "",
-        use_ilp32_folder = False,
 
         exec_compatible_with = [],
         target_compatible_with = [],
@@ -241,16 +202,6 @@ def arm_toolchain(
         name: Name of the repo that will be created
         toolchain_type: The arm type to use, avaible: [ arm-none-eabi ]
         toolchain_version: The arm archive version
-
-        # Theses should be deleted
-        add_toolchain_linkdirs: If the toolchain linkdirs are added to the compile command (aka: -L...). This shown some issue: when this is enable stm32 won't boot (TODO)
-        thumb_abi_version_folder_path: (arm-none-eabi only) The thumb folder to use for using the right arm version / float abi. It has to contain the full path from the gcc version to the libs/includes folders
-            examples:
-                - thumb/nofp
-                - thumb/v7e-m+dp/hard
-                - thumb/v7e-m+dp/softfp
-                - ...
-        use_ilp32_folder: (aarch64-none-elf only) Force the use of the ilp32 libs/includes folder
 
         exec_compatible_with: The target_compatible_with list for the toolchain
         target_compatible_with: The target_compatible_with list for the toolchain
@@ -290,11 +241,6 @@ def arm_toolchain(
         toolchain_version = toolchain_version,
 
         registry_json = json.encode(registry),
-
-        # Theses should be deleted
-        add_toolchain_linkdirs = add_toolchain_linkdirs,
-        thumb_abi_version_folder_path = thumb_abi_version_folder_path,
-        use_ilp32_folder = use_ilp32_folder,
 
         exec_compatible_with = exec_compatible_with,
         target_compatible_with = target_compatible_with,
@@ -349,11 +295,6 @@ def _arm_toolchain_extension_impl(module_ctx):
                 toolchain_type = toolchain.toolchain_type,
                 toolchain_version = toolchain.toolchain_version,
 
-                # Theses should be deleted
-                add_toolchain_linkdirs = toolchain.add_toolchain_linkdirs,
-                thumb_abi_version_folder_path = toolchain.thumb_abi_version_folder_path,
-                use_ilp32_folder = toolchain.use_ilp32_folder,
-
                 exec_compatible_with = toolchain.exec_compatible_with,
                 target_compatible_with = toolchain.target_compatible_with,
 
@@ -387,11 +328,6 @@ arm_toolchain_extension = module_extension(
             'toolchain_version': attr.string(default = "latest"),
 
             'compiler_archive_package': attr.label(default = None),
-
-            # Theses should be deleted
-            'add_toolchain_linkdirs': attr.bool(default = False),
-            'thumb_abi_version_folder_path': attr.string(default = ""),
-            'use_ilp32_folder': attr.bool(default = False),
 
             'exec_compatible_with': attr.string_list(default = []),
             'target_compatible_with': attr.string_list(default = []),

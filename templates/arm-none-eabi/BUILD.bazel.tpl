@@ -31,7 +31,6 @@ cc_toolchain_config(
     },
 
     toolchain_builtin_includedirs = [
-        # "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}/%{toolchain_type}%{thumb_abi_version_folder_path}",
         "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}/%{toolchain_type}",
         "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}",
     ],
@@ -43,12 +42,7 @@ cc_toolchain_config(
     defines = %{defines},
     includedirs = %{includedirs},
     linkdirs = %{linkdirs},
-    # + ([
-    #        "lib/gcc/%{toolchain_type}/%{compiler_version}%{thumb_abi_version_folder_path}",
-    #        "lib/gcc/%{toolchain_type}/%{compiler_version}",
-    #    ] if "%{add_toolchain_linkdirs}" == "true" else []),
     linklibs = %{linklibs},
-    # dbg / opt
     dbg_copts = %{dbg_copts},
     dbg_linkopts = %{dbg_linkopts},
     opt_copts = %{opt_copts},
@@ -171,9 +165,6 @@ filegroup(
 filegroup(
     name = "toolchain_libs",
     srcs = glob([
-        # thumb folder not handled in filegroups:
-        # ---- TO DELETE "lib/gcc/%{toolchain_type}/%{compiler_version}%{thumb_abi_version_folder_path}/*",
-
         "lib/gcc/%{toolchain_type}/%{compiler_version}/*",
         "%{toolchain_type}/lib/*",
     ], allow_empty = True),

@@ -83,9 +83,6 @@ filegroup(
 filegroup(
     name = "toolchain_libs",
     srcs = glob([
-        # thumb folder not handled in filegroups:
-        # ---- TO DELETE "lib/gcc/%{toolchain_type}/%{compiler_version}%{thumb_abi_version_folder_path}/*",
-
         "lib/gcc/%{toolchain_type}/%{compiler_version}/*",
         "%{toolchain_type}/lib/*",
     ], allow_empty = True),
