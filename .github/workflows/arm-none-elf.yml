@@ -1,4 +1,4 @@
-name: arm-none-eabi
+name: aarch64-none-elf
 
 on:
   push:

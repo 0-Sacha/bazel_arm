@@ -30,7 +30,7 @@ cc_toolchain_config(
         "%{compiler_package}:dbg": "dbg",
     },
 
-    toolchain_builtin_includedirs = [
+    toolchain_builtin_includedirs_isystem = [
         "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}/%{toolchain_type}",
         "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}",
     ],
