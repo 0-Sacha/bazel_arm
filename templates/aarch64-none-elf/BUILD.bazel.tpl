@@ -31,7 +31,7 @@ cc_toolchain_config(
     },
 
     toolchain_builtin_includedirs_isystem = [
-        "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}/%{toolchain_type}%{use_ilp32_folder}",
+        "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}/%{toolchain_type}",
         "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}",
     ],
 
@@ -42,7 +42,6 @@ cc_toolchain_config(
     defines = %{defines},
     includedirs = %{includedirs},
     linkdirs = %{linkdirs} + ([
-            "lib/gcc/%{toolchain_type}/%{compiler_version}%{use_ilp32_folder}",
             "lib/gcc/%{toolchain_type}/%{compiler_version}",
         ] if "%{add_toolchain_linkdirs}" == "true" else []),
     linklibs = %{linklibs},
@@ -162,18 +161,17 @@ filegroup(
 filegroup(
     name = "toolchain_includes",
     srcs = glob([
-        "%{toolchain_type}/include/**/*",
-        # "lib/gcc/%{toolchain_type}/%{compiler_version}/include/*",
-        # "lib/gcc/%{toolchain_type}/%{compiler_version}/include-fixed/*",
+        "lib/gcc/%{toolchain_type}/%{compiler_version}/include/*",
+        "lib/gcc/%{toolchain_type}/%{compiler_version}/include-fixed/*",
+        "%{toolchain_type}/include/*",
     ], allow_empty = True),
 )
 
 filegroup(
     name = "toolchain_libs",
     srcs = glob([
-        # ilp32 folder not handled in filegroups: "lib/gcc/%{toolchain_type}/%{compiler_version}%{use_ilp32_folder}/*",
         "lib/gcc/%{toolchain_type}/%{compiler_version}/*",
-        # "%{toolchain_type}/lib/*",
+        "%{toolchain_type}/lib/*",
     ], allow_empty = True),
 )
 
