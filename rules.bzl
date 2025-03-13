@@ -4,7 +4,7 @@ load("@bazel_skylib//lib:sets.bzl", "sets")
 load("@bazel_utilities//toolchains:extras_filegroups.bzl", "filegroup_translate_to_starlark")
 load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx", "split_host_name", "HOST_EXTENSION")
 load("@bazel_utilities//toolchains:registry.bzl", "get_archive_from_registry")
-load("//:registry.bzl", "ARM_REGISTRY")
+load("//registry:registry.bzl", "ARM_REGISTRY")
 
 def _arm_compiler_archive_impl(rctx):
     host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
@@ -83,8 +83,6 @@ def _arm_toolchain_impl(rctx):
         "%{compiler_full_package}": compiler_full_package,
         "%{compiler_package_path}": compiler_package_path,
 
-        "%{add_toolchain_linkdirs}": json.encode(rctx.attr.add_toolchain_linkdirs),
-
         "%{exec_compatible_with}": json.encode(rctx.attr.exec_compatible_with),
         "%{target_compatible_with}": json.encode(rctx.attr.target_compatible_with),
 
@@ -141,8 +139,6 @@ _arm_toolchain = repository_rule(
 
         'registry_json': attr.string(mandatory = True),
 
-        'add_toolchain_linkdirs': attr.bool(default = True),
-
         'exec_compatible_with': attr.string_list(default = []),
         'target_compatible_with': attr.string_list(default = []),
 
@@ -190,8 +186,6 @@ def arm_toolchain(
 
         specs = [],
 
-        add_toolchain_linkdirs = True,
-
         toolchain_extras_filegroups = [],
         
         registry = ARM_REGISTRY,
@@ -227,8 +221,6 @@ def arm_toolchain(
         opt_linkopts: opt_linkopts
 
         specs: specs for the compiler (nano, nosys, ...)
-
-        add_toolchain_linkdirs: If the toolchain linkdirs are added to the compile command (aka: -L...). This shown some issue: when this is enable stm32 won't boot (TODO)
         
         toolchain_extras_filegroups: filegroup added to the cc_toolchain rule to get access to thoses files when sandboxed
 
@@ -249,8 +241,6 @@ def arm_toolchain(
         toolchain_version = toolchain_version,
 
         registry_json = json.encode(registry),
-
-        add_toolchain_linkdirs = add_toolchain_linkdirs,
 
         exec_compatible_with = exec_compatible_with,
         target_compatible_with = target_compatible_with,
@@ -286,14 +276,16 @@ def _arm_toolchain_extension_impl(module_ctx):
         print("Should not end here ! You probably forgotten to put a mandatory argument to the arm_toolchain rule <maybe toolchain_type>")
     toolchain_versions_list = sets.to_list(sets.make(toolchain_versions_list))
 
-    arm_registry = ARM_REGISTRY
     for toolchain_version in toolchain_versions_list:
         arm_compiler_archive(
             name = "archive_arm-{}-{}-{}".format(toolchain_version[0], toolchain_version[1], toolchain_version[2]),
             toolchain_type = toolchain_version[1],
             toolchain_version = toolchain_version[2],
-            registry_json = json.encode(arm_registry),
+            registry_json = json.encode(ARM_REGISTRY),
             override_host_name = toolchain_version[0],
+
+            # thmub and ilp32 folder are not handled here...
+            # should not be an issue since they are handled using -I and -L
         )
     
     for mod in module_ctx.modules:
@@ -315,6 +307,8 @@ def _arm_toolchain_extension_impl(module_ctx):
                 linkdirs = toolchain.linkdirs,
                 linklibs = toolchain.linklibs,
 
+                specs = toolchain.specs,
+
                 toolchain_extras_filegroups = toolchain.toolchain_extras_filegroups,
 
                 compiler_archive_package = "@archive_arm-{}-{}-{}".format(toolchain.override_host_name, toolchain.toolchain_type, toolchain.toolchain_version),
@@ -335,8 +329,6 @@ arm_toolchain_extension = module_extension(
 
             'compiler_archive_package': attr.label(default = None),
 
-            'add_toolchain_linkdirs': attr.bool(default = True),
-
             'exec_compatible_with': attr.string_list(default = []),
             'target_compatible_with': attr.string_list(default = []),
 
@@ -353,6 +345,8 @@ arm_toolchain_extension = module_extension(
             'dbg_linkopts': attr.string_list(default = []),
             'opt_copts': attr.string_list(default = []),
             'opt_linkopts': attr.string_list(default = []),
+
+            'specs': attr.string_list(default = []),
 
             'toolchain_extras_filegroups': attr.label_list(default = []),
         }),

@@ -95,4 +95,3 @@ filegroup(
         # "bin/*%{extension}",
     ], allow_empty = True),
 )
-
