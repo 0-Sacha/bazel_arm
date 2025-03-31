@@ -1,3 +1,0 @@
-
-build:arm-none-eabi --extra_toolchains=@my_arm-none-eabi//:toolchain
-build:aarch64-none-elf --extra_toolchains=@my_aarch64-none-elf//:toolchain
