@@ -14,7 +14,7 @@ load(":aarch64-none-elf.bzl",
 )
 
 
-ARM_REGISTRY = gen_archives_registry([
+ARM_GCC_REGISTRY = gen_archives_registry([
     ARM_NONE_ELF_ARCHIVES_14_2_REL1,
 
     ARM_NONE_EABI_ARCHIVES_14_2_REL1,

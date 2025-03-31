@@ -18,7 +18,7 @@ local_path_override(module_name = "bazel_arm", path = "../../")
 bazel_dep(name = "bazel_utilities", version = "0.0.1", dev_dependency = True)
 bazel_dep(name = "bazel_arm", version = "0.0.1", dev_dependency = True)
 
-arm_toolchain_extension = use_extension("@bazel_arm//:rules.bzl", "arm_toolchain_extension", dev_dependency = True)
+arm_toolchain_extension = use_extension("@bazel_arm//arm_gcc:rules.bzl", "arm_toolchain_extension", dev_dependency = True)
 inject_repo(arm_toolchain_extension, "platforms", "bazel_utilities")
 arm_toolchain_extension.arm_toolchain(
     name = "my_arm-none-eabi",

@@ -33,7 +33,10 @@ cc_toolchain_config(
     toolchain_builtin_includedirs_isystem = [
         "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}/%{toolchain_type}",
         "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}",
-    ],
+    ] + %{toolchain_builtin_includedirs_isystem},
+    
+    toolchain_builtin_includedirs = [
+    ] + %{toolchain_builtin_includedirs},
 
     copts = %{copts},
     conlyopts = %{conlyopts},
@@ -41,15 +44,14 @@ cc_toolchain_config(
     linkopts = %{linkopts},
     defines = %{defines},
     includedirs = %{includedirs},
-    linkdirs = %{linkdirs} + ([
-            "lib/gcc/%{toolchain_type}/%{compiler_version}",
-        ] if "%{add_toolchain_linkdirs}" == "true" else []),
+    linkdirs = %{linkdirs},
     linklibs = %{linklibs},
-    # dbg / opt
     dbg_copts = %{dbg_copts},
     dbg_linkopts = %{dbg_linkopts},
     opt_copts = %{opt_copts},
     opt_linkopts = %{opt_linkopts},
+
+    # verbose_steps = [ "link" ],
 )
 
 cc_toolchain(
@@ -57,7 +59,7 @@ cc_toolchain(
     toolchain_identifier = "%{toolchain_id}",
     toolchain_config = ":cc_config_%{toolchain_id}",
     
-    # TODO: Current fix for Sandboxed build # "%{compiler_package}:all_files",
+    # TODO: Current fix for sandboxed build, should check the minimal set for every rules
     all_files = ":toolchain_every_files",
     compiler_files = ":toolchain_every_files",
     linker_files = ":toolchain_every_files",
@@ -67,10 +69,6 @@ cc_toolchain(
     strip_files = ":toolchain_every_files",
     dwp_files = ":toolchain_every_files",
     coverage_files = ":toolchain_every_files",
-
-    # dynamic_runtime_lib
-    # static_runtime_lib
-    # supports_param_files
 )
 
 toolchain(
