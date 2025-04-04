@@ -3,9 +3,11 @@
 # bazel_arm
 
 Bazel module for using an hermetic arm toolchain.
-Currently only `arm-none-eabi` is supported with latest version is 13.2.1
 
-You can checkout [bazel_stm32](https://github.com/0-Sacha/bazel_stm32) that use this toolchain to provide a STM32 toolchain.
+- `arm-none-eabi` and `arm-none-elf`: [arm-gnu-toolchain-downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)
+- `arm-llvm`: [LLVM-embedded-toolchain-for-Arm](https://github.com/ARM-software/LLVM-embedded-toolchain-for-Arm)
+
+You can checkout [bazel_stm32](https://github.com/0-Sacha/bazel_stm32) that use this toolchain to provide an STM32 toolchain.
 
 ## How to Use
 MODULE.bazel
@@ -13,7 +15,7 @@ MODULE.bazel
 bazel_dep(name = "rules_cc", version = "0.0.10")
 bazel_dep(name = "platforms", version = "0.0.10")
 
-# use the latest commit avaible
+# use the latest commit available
 git_override(module_name="bazel_utilities", remote="https://github.com/0-Sacha/bazel_utilities.git", commit="1c3c6c01dcccc6c922c4955c92aa7c3c015a9d1c")
 git_override(module_name="bazel_arm", remote="https://github.com/0-Sacha/bazel_arm.git", commit="32db016c62be695f42cebc9be21f6cf6e3994a0d")
 

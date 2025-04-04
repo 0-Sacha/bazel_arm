@@ -6,8 +6,8 @@ module(
     version = "0.1",
 )
 
-bazel_dep(name = "rules_cc", version = "0.0.10")
-bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "rules_cc", version = "0.1.1")
+bazel_dep(name = "platforms", version = "0.0.11")
 
 git_override(module_name="bazel_utilities", remote="https://github.com/0-Sacha/bazel_utilities.git", commit="1c3c6c01dcccc6c922c4955c92aa7c3c015a9d1c")
 # local_path_override(module_name = "bazel_utilities", path = "../../../bazel_utilities/")
@@ -18,19 +18,30 @@ local_path_override(module_name = "bazel_arm", path = "../../")
 bazel_dep(name = "bazel_utilities", version = "0.0.1", dev_dependency = True)
 bazel_dep(name = "bazel_arm", version = "0.0.1", dev_dependency = True)
 
-arm_toolchain_extension = use_extension("@bazel_arm//arm_gcc:rules.bzl", "arm_toolchain_extension", dev_dependency = True)
-inject_repo(arm_toolchain_extension, "platforms", "bazel_utilities")
-arm_toolchain_extension.arm_toolchain(
+arm_gcc_toolchain_extension = use_extension("@bazel_arm//arm_gcc:rules.bzl", "arm_gcc_toolchain_extension", dev_dependency = True)
+inject_repo(arm_gcc_toolchain_extension, "platforms", "bazel_utilities")
+arm_gcc_toolchain_extension.arm_gcc_toolchain(
     name = "my_arm-none-eabi",
     toolchain_type = "arm-none-eabi",
     specs = [ "nosys" ],
 )
-arm_toolchain_extension.arm_toolchain(
+arm_gcc_toolchain_extension.arm_gcc_toolchain(
     name = "my_aarch64-none-elf",
     toolchain_type = "aarch64-none-elf",
     specs = [ "nosys" ],
 )
-use_repo(arm_toolchain_extension, "my_arm-none-eabi")
-use_repo(arm_toolchain_extension, "my_aarch64-none-elf")
+use_repo(arm_gcc_toolchain_extension, "my_arm-none-eabi")
+use_repo(arm_gcc_toolchain_extension, "my_aarch64-none-elf")
 # register_toolchains("@my_arm-none-eabi//:toolchain")
 # register_toolchains("@my_aarch64-none-elf//:toolchain")
+
+arm_llvm_toolchain_extension = use_extension("@bazel_arm//arm_llvm:rules.bzl", "arm_llvm_toolchain_extension", dev_dependency = True)
+inject_repo(arm_llvm_toolchain_extension, "platforms", "bazel_utilities")
+arm_llvm_toolchain_extension.arm_llvm_toolchain(
+    name = "my_arm_llvm",
+    toolchain_type = "arm-none-eabi",
+    target = "armv7m_hard_fpv4_sp_d16",
+    specs = [ "nosys" ],
+)
+use_repo(arm_llvm_toolchain_extension, "my_arm_llvm")
+# register_toolchains("@my_arm-none-eabi//:toolchain")

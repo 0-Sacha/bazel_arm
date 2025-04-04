@@ -1,7 +1,20 @@
 {
     "cSpell.words": [
         "bazel",
+        "conlyopts",
+        "cxxopts",
         "eabi",
-        "nosys"
+        "filegroup",
+        "filegroups",
+        "includedirs",
+        "isystem",
+        "linkdirs",
+        "linklibs",
+        "linkopts",
+        "newlib",
+        "nosys",
+        "rctx",
+        "skylib",
+        "starlark"
     ]
 }

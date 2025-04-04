@@ -4,15 +4,15 @@ load("@bazel_skylib//lib:sets.bzl", "sets")
 load("@bazel_utilities//toolchains:extras_filegroups.bzl", "filegroup_translate_to_starlark")
 load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx", "split_host_name", "HOST_EXTENSION")
 load("@bazel_utilities//toolchains:registry.bzl", "get_archive_from_registry")
-load("//arm_gcc/registry:registry.bzl", "ARM_GCC_REGISTRY")
+load("//arm_llvm:registry.bzl", "ARM_LLVM_REGISTRY")
 
-def _impl_arm_gcc_archive(rctx):
+def _impl_arm_llvm_archive(rctx):
     host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
     if rctx.attr.override_host_name != "" and rctx.attr.override_host_name != "local":
         host_os, _, host_name = split_host_name(rctx.attr.override_host_name)
     
     registry = json.decode(rctx.attr.registry_json)
-    archive = get_archive_from_registry(registry, rctx.attr.toolchain_type, rctx.attr.toolchain_version)
+    archive = get_archive_from_registry(registry, "arm-llvm", rctx.attr.toolchain_version)
 
     substitutions = {
         "%{rctx_name}": rctx.name,
@@ -25,7 +25,7 @@ def _impl_arm_gcc_archive(rctx):
     }
     rctx.template(
         "BUILD.bazel",
-        Label("//arm_gcc/templates:BUILD.compiler.bazel.tpl"),
+        Label("//arm_llvm/templates:BUILD.compiler.bazel.tpl"),
         substitutions
     )
     
@@ -39,26 +39,23 @@ def _impl_arm_gcc_archive(rctx):
         stripPrefix = strip_prefix,
     )
 
-arm_gcc_archive = repository_rule(
-    implementation = _impl_arm_gcc_archive,
+arm_llvm_archive = repository_rule(
+    implementation = _impl_arm_llvm_archive,
     attrs = {
         'override_host_name': attr.string(default = "local"),
-
         'toolchain_type': attr.string(mandatory = True),
         'toolchain_version': attr.string(default = "latest"),
         'registry_json': attr.string(mandatory = True),
     },
 )
 
-def _impl_arm_gcc_toolchain(rctx):
+def _impl_arm_llvm_toolchain(rctx):
     host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
     if rctx.attr.override_host_name != "" and rctx.attr.override_host_name != "local":
         host_os, _, host_name = split_host_name(rctx.attr.override_host_name)
 
     registry = json.decode(rctx.attr.registry_json)
-    archive = get_archive_from_registry(registry, rctx.attr.toolchain_type, rctx.attr.toolchain_version)
-
-    toolchain_id = "{}_{}".format(rctx.attr.toolchain_type, archive["details"]["compiler_version"])
+    archive = get_archive_from_registry(registry, "arm-llvm", rctx.attr.toolchain_version)
 
     toolchain_path = "external/{}/".format(rctx.name)
     compiler_package = ""
@@ -77,7 +74,7 @@ def _impl_arm_gcc_toolchain(rctx):
         "%{rctx_path}": toolchain_path,
         "%{extension}": HOST_EXTENSION[host_os],
         "%{host_name}": host_name,
-        "%{toolchain_id}": toolchain_id,
+        "%{toolchain_id}": "arm_clang_{}".format(rctx.attr.toolchain_version),
         "%{toolchain_type}": rctx.attr.toolchain_type,
         "%{toolchain_version}": rctx.attr.toolchain_version,
         "%{compiler_version}": archive["details"]["compiler_version"],
@@ -90,6 +87,8 @@ def _impl_arm_gcc_toolchain(rctx):
 
         "%{toolchain_builtin_includedirs_isystem}": json.encode(rctx.attr.toolchain_builtin_includedirs_isystem),
         "%{toolchain_builtin_includedirs}": json.encode(rctx.attr.toolchain_builtin_includedirs),
+
+        "%{target}": json.encode(rctx.attr.target),
 
         "%{copts}": json.encode(rctx.attr.copts),
         "%{conlyopts}": json.encode(rctx.attr.conlyopts),
@@ -109,17 +108,17 @@ def _impl_arm_gcc_toolchain(rctx):
     }
     rctx.template(
         "BUILD.bazel",
-        Label("//arm_gcc/templates:BUILD.bazel.tpl"),
+        Label("//arm_llvm/templates:BUILD.bazel.tpl"),
         substitutions
     )
     rctx.template(
         "rules.bzl",
-        Label("//arm_gcc/templates:rules.bzl.tpl"),
+        Label("//arm_llvm/templates:rules.bzl.tpl"),
         substitutions
     )
     rctx.template(
         "vscode.bzl",
-        Label("//arm_gcc/templates:vscode.bzl.tpl"),
+        Label("//arm_llvm/templates:vscode.bzl.tpl"),
         substitutions
     )
 
@@ -134,21 +133,29 @@ def _impl_arm_gcc_toolchain(rctx):
             stripPrefix = strip_prefix,
         )
 
-arm_gcc_toolchain = repository_rule(
-    implementation = _impl_arm_gcc_toolchain,
+        rctx.download_and_extract(
+            url = host_archive["url"],
+            sha256 = host_archive["sha256"],
+            stripPrefix = strip_prefix,
+        )
+
+arm_llvm_toolchain = repository_rule(
+    implementation = _impl_arm_llvm_toolchain,
     attrs = {
         'override_host_name': attr.string(default = "local"),
 
         'toolchain_type': attr.string(mandatory = True),
         'toolchain_version': attr.string(default = "latest"),
 
-        'registry_json': attr.string(default = json.encode(ARM_GCC_REGISTRY)),
+        'registry_json': attr.string(default = json.encode(ARM_LLVM_REGISTRY)),
 
         'exec_compatible_with': attr.string_list(default = []),
         'target_compatible_with': attr.string_list(default = []),
 
         'toolchain_builtin_includedirs_isystem': attr.string_list(default = []),
         'toolchain_builtin_includedirs': attr.string_list(default = []),
+
+        'target': attr.string(mandatory = True),
 
         'copts': attr.string_list(default = []),
         'conlyopts': attr.string_list(default = []),
@@ -171,33 +178,30 @@ arm_gcc_toolchain = repository_rule(
     },
 )
 
-def _impl_arm_gcc_toolchain_extension(module_ctx):
+def _impl_arm_llvm_toolchain_extension(module_ctx):
     toolchain_versions_list = [
         (toolchain.override_host_name, toolchain.toolchain_type, toolchain.toolchain_version)
         for mod in module_ctx.modules 
-        for toolchain in mod.tags.arm_gcc_toolchain
+        for toolchain in mod.tags.arm_llvm_toolchain
     ]
     if len(toolchain_versions_list) == 0:
         print("Should not end here ! You probably forgotten to put a mandatory argument to the arm_gcc_toolchain rule maybe <toolchain_type>")
     toolchain_versions_list = sets.to_list(sets.make(toolchain_versions_list))
 
     for toolchain_version in toolchain_versions_list:
-        arm_gcc_archive(
+        arm_llvm_archive(
             name = "archive_arm-{}-{}-{}".format(toolchain_version[0], toolchain_version[1], toolchain_version[2]),
             override_host_name = toolchain_version[0],
             toolchain_type = toolchain_version[1],
             toolchain_version = toolchain_version[2],
-            registry_json = json.encode(ARM_GCC_REGISTRY),
-
-            # thmub and ilp32 folder are not handled here...
-            # should not be an issue since they are handled using -I and -L
+            registry_json = json.encode(ARM_LLVM_REGISTRY),
         )
     
     for mod in module_ctx.modules:
-        for toolchain in mod.tags.arm_gcc_toolchain:
-            arm_gcc_toolchain(
+        for toolchain in mod.tags.arm_llvm_toolchain:
+            arm_llvm_toolchain(
                 name = toolchain.name,
-                
+
                 toolchain_type = toolchain.toolchain_type,
                 toolchain_version = toolchain.toolchain_version,
 
@@ -206,6 +210,8 @@ def _impl_arm_gcc_toolchain_extension(module_ctx):
 
                 toolchain_builtin_includedirs_isystem = toolchain.toolchain_builtin_includedirs_isystem,
                 toolchain_builtin_includedirs = toolchain.toolchain_builtin_includedirs,
+
+                target = toolchain.target,
 
                 copts = toolchain.copts,
                 conlyopts = toolchain.conlyopts,
@@ -225,10 +231,10 @@ def _impl_arm_gcc_toolchain_extension(module_ctx):
                 override_host_name = toolchain.override_host_name,
             )
     
-arm_gcc_toolchain_extension = module_extension(
-    implementation = _impl_arm_gcc_toolchain_extension,
+arm_llvm_toolchain_extension = module_extension(
+    implementation = _impl_arm_llvm_toolchain_extension,
     tag_classes = {
-        "arm_gcc_toolchain": tag_class(attrs = {
+        "arm_llvm_toolchain": tag_class(attrs = {
             'override_host_name': attr.string(default = "local"),
 
             'name': attr.string(mandatory = True),
@@ -243,6 +249,8 @@ arm_gcc_toolchain_extension = module_extension(
 
             'toolchain_builtin_includedirs_isystem': attr.string_list(default = []),
             'toolchain_builtin_includedirs': attr.string_list(default = []),
+
+            'target': attr.string(mandatory = True),
 
             'copts': attr.string_list(default = []),
             'conlyopts': attr.string_list(default = []),

@@ -106,7 +106,6 @@ ARM_NONE_EABI_ARCHIVES_12_3_REL1 = {
     "version-short": "12.3",
     "details": {
         "compiler_version": "12.3.1",
-        "build_file": "compiler.BUILD_arm"
     },
     "archives": {
         "windows_x86_64": {
@@ -138,7 +137,6 @@ ARM_NONE_EABI_ARCHIVES_11_3_REL1 = {
     "version-short": "11.3",
     "details": {
         "compiler_version": "11.3.1",
-        "build_file": "compiler.BUILD_arm"
     },
     "archives": {
         "windows_x86_64": {
