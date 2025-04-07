@@ -1,4 +1,4 @@
-name: arm-none-eabi
+name: llvm/arm-none-eabi/newlib
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
         path: "~/.cache/bazel"
         key: bazel
     - name: Build HelloWorld
-      run: bazelisk build --config=arm_llvm_picolibc //tests:nothing
+      run: bazelisk build --config=arm_llvm_newlib //tests:nothing
       working-directory: examples/common
 
   ubuntu-latest-x86_64:
@@ -31,7 +31,7 @@ jobs:
         path: "~/.cache/bazel"
         key: bazel
     - name: Build HelloWorld
-      run: bazelisk build --config=arm_llvm_picolibc //tests:nothing
+      run: bazelisk build --config=arm_llvm_newlib //tests:nothing
       working-directory: examples/common
 
   ubuntu-latest-aarch64:
@@ -45,5 +45,5 @@ jobs:
         path: "~/.cache/bazel"
         key: bazel
     - name: Build HelloWorld
-      run: bazelisk build --config=arm_llvm_picolibc //tests:nothing
+      run: bazelisk build --config=arm_llvm_newlib //tests:nothing
       working-directory: examples/common

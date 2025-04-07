@@ -9,17 +9,17 @@ ARM_LLVM_ARCHIVES_19_1_5 = {
         "compiler_version": "19",
 
         "newlib_overlay_url": "https://github.com/ARM-software/LLVM-embedded-toolchain-for-Arm/releases/download/release-19.1.5/LLVM-ET-Arm-newlib-overlay-19.1.5.zip",
-        "newlib_overlay_sha256": "EFBE91D95CBC9521EBB212FD97CD4E5AB31222BA8C526EA8727E28EFAD45608F",
+        "newlib_overlay_sha256": "efbe91d95cbc9521ebb212fd97cd4e5ab31222ba8c526ea8727e28efad45608f",
     },
     "archives": {
         "windows_x86_64": {
             "url": "https://github.com/ARM-software/LLVM-embedded-toolchain-for-Arm/releases/download/release-19.1.5/LLVM-ET-Arm-19.1.5-Windows-x86_64.zip",
-            "sha256": "F4B26357071A5BAE0C1DFE5E0D5061595A8CC1F5D921B6595CC3B269021384EB",
+            "sha256": "f4b26357071a5bae0c1dfe5e0d5061595a8cc1f5d921b6595cc3b269021384eb",
             "strip_prefix": "LLVM-ET-Arm-19.1.5-Windows-x86_64",
         },
         "linux_x86_64": {
             "url": "https://github.com/ARM-software/LLVM-embedded-toolchain-for-Arm/releases/download/release-19.1.5/LLVM-ET-Arm-19.1.5-Linux-x86_64.tar.xz.sha256",
-            "sha256": "34EE877AADC78C5E9F067E603A1BC9745ED93CA7AE5DBFC9B4406508DC153920",
+            "sha256": "ed24b2ea7aec2cd09127b2948f92b73e69166b42184b8b8b32956e0e4f2f0143 ",
             "strip_prefix": "LLVM-ET-Arm-19.1.5-Linux-x86_64",
         },
         "linux_aarch64": {
