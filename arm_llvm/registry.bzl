@@ -6,7 +6,7 @@ ARM_LLVM_ARCHIVES_19_1_5 = {
     "version-short": "19.1",
     "latest": True,
     "details": {
-        "compiler_version": "14.2.1",
+        "compiler_version": "19",
 
         "newlib_overlay_url": "https://github.com/ARM-software/LLVM-embedded-toolchain-for-Arm/releases/download/release-19.1.5/LLVM-ET-Arm-newlib-overlay-19.1.5.zip",
         "newlib_overlay_sha256": "EFBE91D95CBC9521EBB212FD97CD4E5AB31222BA8C526EA8727E28EFAD45608F",

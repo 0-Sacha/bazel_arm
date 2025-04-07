@@ -2,4 +2,5 @@
 build:arm-none-eabi --extra_toolchains=@my_arm-none-eabi//:toolchain
 build:aarch64-none-elf --extra_toolchains=@my_aarch64-none-elf//:toolchain
 
-build:arm_llvm --extra_toolchains=@my_arm_llvm//:toolchain
+build:arm_llvm_picolibc --extra_toolchains=@my_arm_llvm_picolibc//:toolchain
+build:arm_llvm_newlib --extra_toolchains=@my_arm_llvm_newlib//:toolchain

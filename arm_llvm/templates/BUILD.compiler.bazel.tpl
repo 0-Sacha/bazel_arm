@@ -8,61 +8,68 @@ filegroup(
     srcs = glob(["**"], allow_empty = True),
 )
 
-
 filegroup(
     name = "cpp",
-    srcs = ["bin/%{toolchain_type}-cpp%{extension}"],
+    srcs = ["bin/clang-cpp%{extension}"],
 )
 filegroup(
     name = "cc",
-    srcs = ["bin/%{toolchain_type}-gcc%{extension}"],
+    srcs = ["bin/clang%{extension}"],
 )
 filegroup(
     name = "cxx",
-    srcs = ["bin/%{toolchain_type}-g++%{extension}"],
+    srcs = ["bin/clang++%{extension}"],
 )
 filegroup(
     name = "as",
-    srcs = ["bin/%{toolchain_type}-as%{extension}"],
+    srcs = ["bin/clang++%{extension}"],
 )
 filegroup(
     name = "ar",
-    srcs = ["bin/%{toolchain_type}-ar%{extension}"],
+    srcs = ["bin/llvm-ar%{extension}"],
 )
 filegroup(
     name = "ld",
-    srcs = ["bin/%{toolchain_type}-ld%{extension}"],
+    srcs = ["bin/lld%{extension}"],
 )
 
 filegroup(
     name = "objcopy",
-    srcs = ["bin/%{toolchain_type}-objcopy%{extension}"],
+    srcs = ["bin/llvm-objcopy%{extension}"],
 )
 filegroup(
     name = "strip",
-    srcs = ["bin/%{toolchain_type}-strip%{extension}"],
+    srcs = ["bin/llvm-strip%{extension}"],
 )
 
 filegroup(
     name = "cov",
-    srcs = ["bin/%{toolchain_type}-gcov%{extension}"],
+    srcs = ["bin/llvm-cov%{extension}"],
 )
 
 filegroup(
     name = "size",
-    srcs = ["bin/%{toolchain_type}-size%{extension}"],
+    srcs = ["bin/llvm-size%{extension}"],
 )
 filegroup(
     name = "nm",
-    srcs = ["bin/%{toolchain_type}-nm%{extension}"],
+    srcs = ["bin/llvm-nm%{extension}"],
 )
 filegroup(
     name = "objdump",
-    srcs = ["bin/%{toolchain_type}-objdump%{extension}"],
+    srcs = ["bin/llvm-objdump%{extension}"],
 )
 filegroup(
-    name = "dwp",
-    srcs = ["bin/%{toolchain_type}-dwp%{extension}"],
+    name = "readelf",
+    srcs = ["bin/llvm-readelf%{extension}"],
+)
+filegroup(
+    name = "readobj",
+    srcs = ["bin/llvm-readobj%{extension}"],
+)
+filegroup(
+    name = "strings",
+    srcs = ["bin/llvm-strings%{extension}"],
 )
 
 filegroup(
@@ -72,27 +79,19 @@ filegroup(
 
 
 filegroup(
+    name = "toolchain_bins",
+    srcs = glob([ "bin/*%{extension}" ], allow_empty = True),
+)
+
+
+# This groups need to be checked, this archives doesn't know about the target, type, and multilib 
+
+filegroup(
     name = "toolchain_includes",
-    srcs = glob([
-        "lib/gcc/%{toolchain_type}/%{compiler_version}/include/*",
-        "lib/gcc/%{toolchain_type}/%{compiler_version}/include-fixed/*",
-        "%{toolchain_type}/include/*",
-    ], allow_empty = True),
+    srcs = glob([ "lib/clang-runtimes/**/*" ], allow_empty = True),
 )
 
 filegroup(
     name = "toolchain_libs",
-    srcs = glob([
-        "lib/gcc/%{toolchain_type}/%{compiler_version}/*",
-        "%{toolchain_type}/lib/*",
-    ], allow_empty = True),
+    srcs = glob([ "lib/clang-runtimes/*" ], allow_empty = True),
 )
-
-filegroup(
-    name = "toolchain_bins",
-    srcs = glob([
-        "%{toolchain_type}/bin/*%{extension}",
-        # "bin/*%{extension}",
-    ], allow_empty = True),
-)
-

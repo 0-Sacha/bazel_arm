@@ -11,6 +11,8 @@
         "linkdirs",
         "linklibs",
         "linkopts",
+        "mcuopts",
+        "multilib",
         "newlib",
         "nosys",
         "rctx",

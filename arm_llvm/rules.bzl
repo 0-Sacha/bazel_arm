@@ -19,7 +19,6 @@ def _impl_arm_llvm_archive(rctx):
         "%{rctx_path}": "external/{}/".format(rctx.name),
         "%{extension}": HOST_EXTENSION[host_os],
         "%{host_name}": host_name,
-        "%{toolchain_type}": rctx.attr.toolchain_type,
         "%{toolchain_version}": rctx.attr.toolchain_version,
         "%{compiler_version}": archive["details"]["compiler_version"],
     }
@@ -39,11 +38,21 @@ def _impl_arm_llvm_archive(rctx):
         stripPrefix = strip_prefix,
     )
 
+    details = archive["details"]
+    strip_prefix = ""
+    if "newlib_overlay_strip_prefix" in details:
+        strip_prefix = details["newlib_overlay_strip_prefix"]
+    rctx.download_and_extract(
+        url = details["newlib_overlay_url"],
+        sha256 = details["newlib_overlay_sha256"],
+        stripPrefix = strip_prefix,
+        # output = "overlays/newlib"
+    )
+
 arm_llvm_archive = repository_rule(
     implementation = _impl_arm_llvm_archive,
     attrs = {
         'override_host_name': attr.string(default = "local"),
-        'toolchain_type': attr.string(mandatory = True),
         'toolchain_version': attr.string(default = "latest"),
         'registry_json': attr.string(mandatory = True),
     },
@@ -65,8 +74,16 @@ def _impl_arm_llvm_toolchain(rctx):
         compiler_package = "@@{}//".format(rctx.attr.compiler_archive_package.repo_name)
         compiler_full_package = compiler_package
         compiler_package_path = rctx.attr.compiler_archive_package.workspace_root + "/"
-
-    linkopts = rctx.attr.linkopts + [ "--specs={}.specs".format(spec) for spec in rctx.attr.specs ]
+        
+    overlay = rctx.attr.toolchain_overlay + "/"
+    if overlay == "picolibc/":
+        overlay = ""
+    sysroot = [ "--sysroot={}lib/clang-runtimes/{}{}/{}".format(compiler_package_path, overlay, rctx.attr.toolchain_type, rctx.attr.toolchain_multilib) ]
+    print(sysroot)
+    target = [ "--target={}".format(rctx.attr.target) ]
+    specs = [ "--specs={}.specs".format(spec) for spec in rctx.attr.specs ]
+    copts = rctx.attr.mcuopts + target + sysroot + rctx.attr.copts
+    linkopts = rctx.attr.mcuopts + target + sysroot + rctx.attr.linkopts + specs
 
     substitutions = {
         "%{name}": rctx.name,
@@ -75,8 +92,12 @@ def _impl_arm_llvm_toolchain(rctx):
         "%{extension}": HOST_EXTENSION[host_os],
         "%{host_name}": host_name,
         "%{toolchain_id}": "arm_clang_{}".format(rctx.attr.toolchain_version),
-        "%{toolchain_type}": rctx.attr.toolchain_type,
+
         "%{toolchain_version}": rctx.attr.toolchain_version,
+        "%{toolchain_type}": rctx.attr.toolchain_type,
+        "%{toolchain_multilib}": rctx.attr.toolchain_multilib,
+        "%{overlay}": overlay,
+
         "%{compiler_version}": archive["details"]["compiler_version"],
         "%{compiler_package}": compiler_package,
         "%{compiler_full_package}": compiler_full_package,
@@ -88,9 +109,7 @@ def _impl_arm_llvm_toolchain(rctx):
         "%{toolchain_builtin_includedirs_isystem}": json.encode(rctx.attr.toolchain_builtin_includedirs_isystem),
         "%{toolchain_builtin_includedirs}": json.encode(rctx.attr.toolchain_builtin_includedirs),
 
-        "%{target}": json.encode(rctx.attr.target),
-
-        "%{copts}": json.encode(rctx.attr.copts),
+        "%{copts}": json.encode(copts),
         "%{conlyopts}": json.encode(rctx.attr.conlyopts),
         "%{cxxopts}": json.encode(rctx.attr.cxxopts),
         "%{linkopts}": json.encode(linkopts),
@@ -133,10 +152,15 @@ def _impl_arm_llvm_toolchain(rctx):
             stripPrefix = strip_prefix,
         )
 
+        details = archive["details"]
+        strip_prefix = ""
+        if "newlib_overlay_strip_prefix" in details:
+            strip_prefix = details["newlib_overlay_strip_prefix"]
         rctx.download_and_extract(
-            url = host_archive["url"],
-            sha256 = host_archive["sha256"],
+            url = details["newlib_overlay_url"],
+            sha256 = details["newlib_overlay_sha256"],
             stripPrefix = strip_prefix,
+            # output = "overlays/newlib"
         )
 
 arm_llvm_toolchain = repository_rule(
@@ -144,8 +168,11 @@ arm_llvm_toolchain = repository_rule(
     attrs = {
         'override_host_name': attr.string(default = "local"),
 
-        'toolchain_type': attr.string(mandatory = True),
         'toolchain_version': attr.string(default = "latest"),
+        'toolchain_type': attr.string(mandatory = True, values = ["arm-none-eabi", "aarch64-none-elf"]),
+        'toolchain_multilib': attr.string(mandatory = True),
+        'toolchain_overlay': attr.string(mandatory = True, values = ["picolibc", "newlib"]),
+        'target': attr.string(mandatory = True),
 
         'registry_json': attr.string(default = json.encode(ARM_LLVM_REGISTRY)),
 
@@ -155,8 +182,7 @@ arm_llvm_toolchain = repository_rule(
         'toolchain_builtin_includedirs_isystem': attr.string_list(default = []),
         'toolchain_builtin_includedirs': attr.string_list(default = []),
 
-        'target': attr.string(mandatory = True),
-
+        'mcuopts': attr.string_list(default = []),
         'copts': attr.string_list(default = []),
         'conlyopts': attr.string_list(default = []),
         'cxxopts': attr.string_list(default = []),
@@ -180,20 +206,19 @@ arm_llvm_toolchain = repository_rule(
 
 def _impl_arm_llvm_toolchain_extension(module_ctx):
     toolchain_versions_list = [
-        (toolchain.override_host_name, toolchain.toolchain_type, toolchain.toolchain_version)
+        (toolchain.override_host_name, toolchain.toolchain_version)
         for mod in module_ctx.modules 
         for toolchain in mod.tags.arm_llvm_toolchain
     ]
     if len(toolchain_versions_list) == 0:
-        print("Should not end here ! You probably forgotten to put a mandatory argument to the arm_gcc_toolchain rule maybe <toolchain_type>")
+        print("Should not end here ! You probably forgotten to put a mandatory argument to the arm_llvm_toolchain: <toolchain_version>")
     toolchain_versions_list = sets.to_list(sets.make(toolchain_versions_list))
 
     for toolchain_version in toolchain_versions_list:
         arm_llvm_archive(
-            name = "archive_arm-{}-{}-{}".format(toolchain_version[0], toolchain_version[1], toolchain_version[2]),
+            name = "archive_arm_llvm-{}-{}".format(toolchain_version[0], toolchain_version[1]),
             override_host_name = toolchain_version[0],
-            toolchain_type = toolchain_version[1],
-            toolchain_version = toolchain_version[2],
+            toolchain_version = toolchain_version[1],
             registry_json = json.encode(ARM_LLVM_REGISTRY),
         )
     
@@ -202,8 +227,11 @@ def _impl_arm_llvm_toolchain_extension(module_ctx):
             arm_llvm_toolchain(
                 name = toolchain.name,
 
-                toolchain_type = toolchain.toolchain_type,
                 toolchain_version = toolchain.toolchain_version,
+                toolchain_type = toolchain.toolchain_type,
+                toolchain_multilib = toolchain.toolchain_multilib,
+                toolchain_overlay = toolchain.toolchain_overlay,
+                target = toolchain.target,
 
                 exec_compatible_with = toolchain.exec_compatible_with,
                 target_compatible_with = toolchain.target_compatible_with,
@@ -211,8 +239,7 @@ def _impl_arm_llvm_toolchain_extension(module_ctx):
                 toolchain_builtin_includedirs_isystem = toolchain.toolchain_builtin_includedirs_isystem,
                 toolchain_builtin_includedirs = toolchain.toolchain_builtin_includedirs,
 
-                target = toolchain.target,
-
+                mcuopts = toolchain.mcuopts,
                 copts = toolchain.copts,
                 conlyopts = toolchain.conlyopts,
                 cxxopts = toolchain.cxxopts,
@@ -226,7 +253,7 @@ def _impl_arm_llvm_toolchain_extension(module_ctx):
 
                 toolchain_extras_filegroups = toolchain.toolchain_extras_filegroups,
 
-                compiler_archive_package = "@archive_arm-{}-{}-{}".format(toolchain.override_host_name, toolchain.toolchain_type, toolchain.toolchain_version),
+                compiler_archive_package = "@archive_arm_llvm-{}-{}".format(toolchain_version[0], toolchain_version[1]),
 
                 override_host_name = toolchain.override_host_name,
             )
@@ -239,8 +266,11 @@ arm_llvm_toolchain_extension = module_extension(
 
             'name': attr.string(mandatory = True),
             
-            'toolchain_type': attr.string(mandatory = True),
             'toolchain_version': attr.string(default = "latest"),
+            'toolchain_type': attr.string(mandatory = True, values = ["arm-none-eabi", "aarch64-none-elf"]),
+            'toolchain_overlay': attr.string(mandatory = True, values = ["picolibc", "newlib"]),
+            'toolchain_multilib': attr.string(mandatory = True),
+            'target': attr.string(mandatory = True),
 
             'compiler_archive_package': attr.label(default = None),
 
@@ -250,8 +280,7 @@ arm_llvm_toolchain_extension = module_extension(
             'toolchain_builtin_includedirs_isystem': attr.string_list(default = []),
             'toolchain_builtin_includedirs': attr.string_list(default = []),
 
-            'target': attr.string(mandatory = True),
-
+            'mcuopts': attr.string_list(default = []),
             'copts': attr.string_list(default = []),
             'conlyopts': attr.string_list(default = []),
             'cxxopts': attr.string_list(default = []),

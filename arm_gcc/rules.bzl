@@ -69,7 +69,9 @@ def _impl_arm_gcc_toolchain(rctx):
         compiler_full_package = compiler_package
         compiler_package_path = rctx.attr.compiler_archive_package.workspace_root + "/"
 
-    linkopts = rctx.attr.linkopts + [ "--specs={}.specs".format(spec) for spec in rctx.attr.specs ]
+    specs = [ "--specs={}.specs".format(spec) for spec in rctx.attr.specs ]
+    copts = rctx.attr.mcuopts + rctx.attr.copts
+    linkopts = rctx.attr.mcuopts + rctx.attr.linkopts + specs
 
     substitutions = {
         "%{name}": rctx.name,
@@ -91,7 +93,7 @@ def _impl_arm_gcc_toolchain(rctx):
         "%{toolchain_builtin_includedirs_isystem}": json.encode(rctx.attr.toolchain_builtin_includedirs_isystem),
         "%{toolchain_builtin_includedirs}": json.encode(rctx.attr.toolchain_builtin_includedirs),
 
-        "%{copts}": json.encode(rctx.attr.copts),
+        "%{copts}": json.encode(copts),
         "%{conlyopts}": json.encode(rctx.attr.conlyopts),
         "%{cxxopts}": json.encode(rctx.attr.cxxopts),
         "%{linkopts}": json.encode(linkopts),
@@ -139,7 +141,7 @@ arm_gcc_toolchain = repository_rule(
     attrs = {
         'override_host_name': attr.string(default = "local"),
 
-        'toolchain_type': attr.string(mandatory = True),
+        'toolchain_type': attr.string(mandatory = True, values = ["arm-none-eabi", "aarch64-none-elf"]),
         'toolchain_version': attr.string(default = "latest"),
 
         'registry_json': attr.string(default = json.encode(ARM_GCC_REGISTRY)),
@@ -150,6 +152,7 @@ arm_gcc_toolchain = repository_rule(
         'toolchain_builtin_includedirs_isystem': attr.string_list(default = []),
         'toolchain_builtin_includedirs': attr.string_list(default = []),
 
+        'mcuopts': attr.string_list(default = []),
         'copts': attr.string_list(default = []),
         'conlyopts': attr.string_list(default = []),
         'cxxopts': attr.string_list(default = []),
@@ -183,14 +186,11 @@ def _impl_arm_gcc_toolchain_extension(module_ctx):
 
     for toolchain_version in toolchain_versions_list:
         arm_gcc_archive(
-            name = "archive_arm-{}-{}-{}".format(toolchain_version[0], toolchain_version[1], toolchain_version[2]),
+            name = "archive_arm_gcc-{}-{}-{}".format(toolchain_version[0], toolchain_version[1], toolchain_version[2]),
             override_host_name = toolchain_version[0],
             toolchain_type = toolchain_version[1],
             toolchain_version = toolchain_version[2],
             registry_json = json.encode(ARM_GCC_REGISTRY),
-
-            # thmub and ilp32 folder are not handled here...
-            # should not be an issue since they are handled using -I and -L
         )
     
     for mod in module_ctx.modules:
@@ -207,6 +207,7 @@ def _impl_arm_gcc_toolchain_extension(module_ctx):
                 toolchain_builtin_includedirs_isystem = toolchain.toolchain_builtin_includedirs_isystem,
                 toolchain_builtin_includedirs = toolchain.toolchain_builtin_includedirs,
 
+                mcuopts = toolchain.mcuopts,
                 copts = toolchain.copts,
                 conlyopts = toolchain.conlyopts,
                 cxxopts = toolchain.cxxopts,
@@ -220,7 +221,7 @@ def _impl_arm_gcc_toolchain_extension(module_ctx):
 
                 toolchain_extras_filegroups = toolchain.toolchain_extras_filegroups,
 
-                compiler_archive_package = "@archive_arm-{}-{}-{}".format(toolchain.override_host_name, toolchain.toolchain_type, toolchain.toolchain_version),
+                compiler_archive_package = "@archive_arm_gcc-{}-{}-{}".format(toolchain.override_host_name, toolchain.toolchain_type, toolchain.toolchain_version),
 
                 override_host_name = toolchain.override_host_name,
             )
@@ -233,7 +234,7 @@ arm_gcc_toolchain_extension = module_extension(
 
             'name': attr.string(mandatory = True),
             
-            'toolchain_type': attr.string(mandatory = True),
+            'toolchain_type': attr.string(mandatory = True, values = ["arm-none-eabi", "aarch64-none-elf"]),
             'toolchain_version': attr.string(default = "latest"),
 
             'compiler_archive_package': attr.label(default = None),
@@ -244,6 +245,7 @@ arm_gcc_toolchain_extension = module_extension(
             'toolchain_builtin_includedirs_isystem': attr.string_list(default = []),
             'toolchain_builtin_includedirs': attr.string_list(default = []),
 
+            'mcuopts': attr.string_list(default = []),
             'copts': attr.string_list(default = []),
             'conlyopts': attr.string_list(default = []),
             'cxxopts': attr.string_list(default = []),

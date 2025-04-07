@@ -5,7 +5,9 @@
 Bazel module for using an hermetic arm toolchain.
 
 - `arm-none-eabi` and `arm-none-elf`: [arm-gnu-toolchain-downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)
-- `arm-llvm`: [LLVM-embedded-toolchain-for-Arm](https://github.com/ARM-software/LLVM-embedded-toolchain-for-Arm)
+- `arm-llvm`:
+    - before 19.1.5: [LLVM-embedded-toolchain-for-Arm](https://github.com/ARM-software/LLVM-embedded-toolchain-for-Arm)
+    - 20 and after: [arm-toolchain](https://github.com/arm/arm-toolchain)
 
 You can checkout [bazel_stm32](https://github.com/0-Sacha/bazel_stm32) that use this toolchain to provide an STM32 toolchain.
 
@@ -16,7 +18,7 @@ bazel_dep(name = "rules_cc", version = "0.0.10")
 bazel_dep(name = "platforms", version = "0.0.10")
 
 # use the latest commit available
-git_override(module_name="bazel_utilities", remote="https://github.com/0-Sacha/bazel_utilities.git", commit="1c3c6c01dcccc6c922c4955c92aa7c3c015a9d1c")
+git_override(module_name="bazel_utilities", remote="https://github.com/0-Sacha/bazel_utilities.git", commit="230196b5427877a13e38a6e9d3b5a3b336ff2480")
 git_override(module_name="bazel_arm", remote="https://github.com/0-Sacha/bazel_arm.git", commit="32db016c62be695f42cebc9be21f6cf6e3994a0d")
 
 bazel_dep(name = "bazel_utilities", version = "0.0.1", dev_dependency = True)
