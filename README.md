@@ -23,7 +23,7 @@ bazel_dep(name = "platforms", version = "0.0.10")
 
 # use the latest commit available
 git_override(module_name="bazel_utilities", remote="https://github.com/0-Sacha/bazel_utilities.git", commit="230196b5427877a13e38a6e9d3b5a3b336ff2480")
-git_override(module_name="bazel_arm", remote="https://github.com/0-Sacha/bazel_arm.git", commit="32db016c62be695f42cebc9be21f6cf6e3994a0d")
+git_override(module_name="bazel_arm", remote="https://github.com/0-Sacha/bazel_arm.git", commit="610ec5092932dd6387054a7843e80874db4b459a")
 
 bazel_dep(name = "bazel_utilities", version = "0.0.1", dev_dependency = True)
 bazel_dep(name = "bazel_arm", version = "0.0.1", dev_dependency = True)
