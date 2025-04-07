@@ -18,7 +18,7 @@ ARM_LLVM_ARCHIVES_19_1_5 = {
             "strip_prefix": "LLVM-ET-Arm-19.1.5-Windows-x86_64",
         },
         "linux_x86_64": {
-            "url": "https://github.com/ARM-software/LLVM-embedded-toolchain-for-Arm/releases/download/release-19.1.5/LLVM-ET-Arm-19.1.5-Linux-x86_64.tar.xz.sha256",
+            "url": "https://github.com/ARM-software/LLVM-embedded-toolchain-for-Arm/releases/download/release-19.1.5/LLVM-ET-Arm-19.1.5-Linux-x86_64.tar.xz",
             "sha256": "ed24b2ea7aec2cd09127b2948f92b73e69166b42184b8b8b32956e0e4f2f0143",
             "strip_prefix": "LLVM-ET-Arm-19.1.5-Linux-x86_64",
         },
