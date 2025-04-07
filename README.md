@@ -1,4 +1,8 @@
-[![bazel_arm/arm-none-eabi](https://github.com/0-Sacha/bazel_arm/actions/workflows/arm-none-eabi.yml/badge.svg)](https://github.com/0-Sacha/bazel_arm/actions/workflows/arm-none-eabi.yml)
+[![bazel_arm/gcc/arm-none-eabi](https://github.com/0-Sacha/bazel_arm/actions/workflows/gcc_arm-none-eabi.yml/badge.svg)](https://github.com/0-Sacha/bazel_arm/actions/workflows/gcc_arm-none-eabi.yml)
+[![bazel_arm/gcc/aarch64-none-eabi](https://github.com/0-Sacha/bazel_arm/actions/workflows/gcc_aarch64-none-elf.yml/badge.svg)](https://github.com/0-Sacha/bazel_arm/actions/workflows/gcc_aarch64-none-elf.yml)
+
+[![bazel_arm/llvm/arm-none-eabi/picolibc](https://github.com/0-Sacha/bazel_arm/actions/workflows/llvm_arm-none-eabi_picolibc.yml/badge.svg)](https://github.com/0-Sacha/bazel_arm/actions/workflows/llvm_arm-none-eabi_picolibc.yml)
+[![bazel_arm/llvm/arm-none-eabi/newlib](https://github.com/0-Sacha/bazel_arm/actions/workflows/llvm_arm-none-eabi_newlib.yml/badge.svg)](https://github.com/0-Sacha/bazel_arm/actions/workflows/llvm_arm-none-eabi_newlib.yml)
 
 # bazel_arm
 
