@@ -1,39 +1,31 @@
 ""
 
-load("@bazel_utilities//toolchains:cc_toolchain_config.bzl", "cc_toolchain_config")
+load("@bazel_utilities//toolchains:cc_toolchain_config.bzl", "cc_toolchain_config_bins")
 
 package(default_visibility = ["//visibility:public"])
 
-cc_toolchain_config(
+cc_toolchain_config_bins(
     name = "cc_config_%{toolchain_id}",
     toolchain_identifier = "%{toolchain_id}",
 
-    compiler_type = "gcc",
+    compiler_type = "clang",
 
-    toolchain_bins = {
-        "%{compiler_package}:cpp": "cpp",
-        "%{compiler_package}:cc": "cc",
-        "%{compiler_package}:cxx": "cxx",
-        "%{compiler_package}:as": "as",
-        "%{compiler_package}:ar": "ar",
-        "%{compiler_package}:ld": "ld",
-
-        "%{compiler_package}:objcopy": "objcopy",
-        "%{compiler_package}:strip": "strip",
-
-        "%{compiler_package}:cov": "cov",
-
-        "%{compiler_package}:size": "size",
-        "%{compiler_package}:nm": "nm",
-        "%{compiler_package}:objdump": "objdump",
-        "%{compiler_package}:dwp": "dwp",
-        "%{compiler_package}:dbg": "dbg",
-    },
+    cpp_bin = "%{compiler_package}:cpp",
+    cc_bin = "%{compiler_package}:cc",
+    cxx_bin = "%{compiler_package}:cxx",
+    ar_bin = "%{compiler_package}:ar",
+    as_bin = "%{compiler_package}:as",
+    ld_bin = "%{compiler_package}:ld",
+    strip_bin = "%{compiler_package}:strip",
+    cov_bin = "%{compiler_package}:cov",
+    nm_bin = "%{compiler_package}:nm",
+    objdump_bin = "%{compiler_package}:objdump",
 
     toolchain_builtin_includedirs_isystem = [
-        "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}/%{toolchain_type}",
-        "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}",
-    ],
+    ] + %{toolchain_builtin_includedirs_isystem},
+    
+    toolchain_builtin_includedirs = [
+    ] + %{toolchain_builtin_includedirs},
 
     copts = %{copts},
     conlyopts = %{conlyopts},
@@ -41,11 +33,8 @@ cc_toolchain_config(
     linkopts = %{linkopts},
     defines = %{defines},
     includedirs = %{includedirs},
-    linkdirs = %{linkdirs} + ([
-            "lib/gcc/%{toolchain_type}/%{compiler_version}",
-        ] if "%{add_toolchain_linkdirs}" == "true" else []),
+    linkdirs = %{linkdirs},
     linklibs = %{linklibs},
-    # dbg / opt
     dbg_copts = %{dbg_copts},
     dbg_linkopts = %{dbg_linkopts},
     opt_copts = %{opt_copts},
@@ -57,7 +46,7 @@ cc_toolchain(
     toolchain_identifier = "%{toolchain_id}",
     toolchain_config = ":cc_config_%{toolchain_id}",
     
-    # TODO: Current fix for Sandboxed build # "%{compiler_package}:all_files",
+    # TODO: Current fix for sandboxed build, should check the minimal set for every rules
     all_files = ":toolchain_every_files",
     compiler_files = ":toolchain_every_files",
     linker_files = ":toolchain_every_files",
@@ -67,10 +56,6 @@ cc_toolchain(
     strip_files = ":toolchain_every_files",
     dwp_files = ":toolchain_every_files",
     coverage_files = ":toolchain_every_files",
-
-    # dynamic_runtime_lib
-    # static_runtime_lib
-    # supports_param_files
 )
 
 toolchain(
@@ -89,7 +74,6 @@ filegroup(
         "%{compiler_package}:toolchain_internal_every_files",
     ] + %{toolchain_extras_filegroups}
 )
-
 filegroup(
     name = "toolchain_internal_every_files",
     srcs = glob(["**"]),
@@ -98,58 +82,66 @@ filegroup(
 
 filegroup(
     name = "cpp",
-    srcs = ["bin/%{toolchain_type}-cpp%{extension}"],
+    srcs = ["bin/clang-cpp%{extension}"],
 )
 filegroup(
     name = "cc",
-    srcs = ["bin/%{toolchain_type}-gcc%{extension}"],
+    srcs = ["bin/clang%{extension}"],
 )
 filegroup(
     name = "cxx",
-    srcs = ["bin/%{toolchain_type}-g++%{extension}"],
+    srcs = ["bin/clang++%{extension}"],
 )
 filegroup(
     name = "as",
-    srcs = ["bin/%{toolchain_type}-as%{extension}"],
+    srcs = ["bin/clang++%{extension}"],
 )
 filegroup(
     name = "ar",
-    srcs = ["bin/%{toolchain_type}-ar%{extension}"],
+    srcs = ["bin/llvm-ar%{extension}"],
 )
 filegroup(
     name = "ld",
-    srcs = ["bin/%{toolchain_type}-ld%{extension}"],
+    srcs = ["bin/lld%{extension}"],
 )
 
 filegroup(
     name = "objcopy",
-    srcs = ["bin/%{toolchain_type}-objcopy%{extension}"],
+    srcs = ["bin/llvm-objcopy%{extension}"],
 )
 filegroup(
     name = "strip",
-    srcs = ["bin/%{toolchain_type}-strip%{extension}"],
+    srcs = ["bin/llvm-strip%{extension}"],
 )
 
 filegroup(
     name = "cov",
-    srcs = ["bin/%{toolchain_type}-gcov%{extension}"],
+    srcs = ["bin/llvm-cov%{extension}"],
 )
 
 filegroup(
     name = "size",
-    srcs = ["bin/%{toolchain_type}-size%{extension}"],
+    srcs = ["bin/llvm-size%{extension}"],
 )
 filegroup(
     name = "nm",
-    srcs = ["bin/%{toolchain_type}-nm%{extension}"],
+    srcs = ["bin/llvm-nm%{extension}"],
 )
 filegroup(
     name = "objdump",
-    srcs = ["bin/%{toolchain_type}-objdump%{extension}"],
+    srcs = ["bin/llvm-objdump%{extension}"],
 )
 filegroup(
-    name = "dwp",
-    srcs = ["bin/%{toolchain_type}-dwp%{extension}"],
+    name = "readelf",
+    srcs = ["bin/llvm-readelf%{extension}"],
+)
+filegroup(
+    name = "readobj",
+    srcs = ["bin/llvm-readobj%{extension}"],
+)
+filegroup(
+    name = "strings",
+    srcs = ["bin/llvm-strings%{extension}"],
 )
 
 filegroup(
@@ -159,28 +151,19 @@ filegroup(
 
 
 filegroup(
+    name = "toolchain_bins",
+    srcs = glob([ "bin/*%{extension}" ], allow_empty = True),
+)
+
+
+filegroup(
     name = "toolchain_includes",
-    srcs = glob([
-        "lib/gcc/%{toolchain_type}/%{compiler_version}/include/*",
-        "lib/gcc/%{toolchain_type}/%{compiler_version}/include-fixed/*",
-        "%{toolchain_type}/include/*",
-    ], allow_empty = True),
+    srcs = glob([ "lib/clang-runtimes/%{toolchain_type}/%{toolchain_mulilib}/include/**/*" ], allow_empty = True),
 )
 
 filegroup(
     name = "toolchain_libs",
-    srcs = glob([
-        "lib/gcc/%{toolchain_type}/%{compiler_version}/*",
-        "%{toolchain_type}/lib/*",
-    ], allow_empty = True),
-)
-
-filegroup(
-    name = "toolchain_bins",
-    srcs = glob([
-        "%{toolchain_type}/bin/*%{extension}",
-        # "bin/*%{extension}",
-    ], allow_empty = True),
+    srcs = glob([ "lib/clang-runtimes/%{toolchain_type}/%{toolchain_mulilib}/lib/*" ], allow_empty = True),
 )
 
 
@@ -244,7 +227,9 @@ filegroup(
         "%{compiler_package}:objdump",
         "%{compiler_package}:as",
         "%{compiler_package}:size",
-        "%{compiler_package}:dwp",
+        "%{compiler_package}:readelf",
+        "%{compiler_package}:readobj",
+        "%{compiler_package}:strings",
         
         "%{compiler_package}:dbg",
     ],

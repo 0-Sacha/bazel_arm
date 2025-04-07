@@ -2,7 +2,7 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
-def _arm_all_files_impl(ctx):
+def _impl_arm_all_files(ctx):
     ctx.actions.run_shell(
         inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.elf ],
@@ -72,7 +72,7 @@ def _arm_all_files_impl(ctx):
     ]
 
 arm_all_files = rule(
-    implementation = _arm_all_files_impl,
+    implementation = _impl_arm_all_files,
     attrs = {
         'objcopy': attr.label(allow_single_file = True),
         'objdump': attr.label(allow_single_file = True),

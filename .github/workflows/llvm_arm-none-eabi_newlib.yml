@@ -1,0 +1,49 @@
+name: llvm/arm-none-eabi/newlib
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  windows-latest:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: bazelbuild/setup-bazelisk@v3
+    - name: Mount bazel cache
+      uses: actions/cache@v4
+      with:
+        path: "~/.cache/bazel"
+        key: bazel
+    - name: Build HelloWorld
+      run: bazelisk build --config=arm_llvm_newlib //tests:nothing
+      working-directory: examples/common
+
+  ubuntu-latest-x86_64:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: bazelbuild/setup-bazelisk@v3
+    - name: Mount bazel cache
+      uses: actions/cache@v4
+      with:
+        path: "~/.cache/bazel"
+        key: bazel
+    - name: Build HelloWorld
+      run: bazelisk build --config=arm_llvm_newlib //tests:nothing
+      working-directory: examples/common
+
+  ubuntu-latest-aarch64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+    - uses: actions/checkout@v4
+    - uses: bazelbuild/setup-bazelisk@v3
+    - name: Mount bazel cache
+      uses: actions/cache@v4
+      with:
+        path: "~/.cache/bazel"
+        key: bazel
+    - name: Build HelloWorld
+      run: bazelisk build --config=arm_llvm_newlib //tests:nothing
+      working-directory: examples/common

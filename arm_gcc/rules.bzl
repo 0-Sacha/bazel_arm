@@ -4,9 +4,9 @@ load("@bazel_skylib//lib:sets.bzl", "sets")
 load("@bazel_utilities//toolchains:extras_filegroups.bzl", "filegroup_translate_to_starlark")
 load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx", "split_host_name", "HOST_EXTENSION")
 load("@bazel_utilities//toolchains:registry.bzl", "get_archive_from_registry")
-load("//registry:registry.bzl", "ARM_REGISTRY")
+load("//arm_gcc/registry:registry.bzl", "ARM_GCC_REGISTRY")
 
-def _arm_compiler_archive_impl(rctx):
+def _impl_arm_gcc_archive(rctx):
     host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
     if rctx.attr.override_host_name != "" and rctx.attr.override_host_name != "local":
         host_os, _, host_name = split_host_name(rctx.attr.override_host_name)
@@ -25,7 +25,7 @@ def _arm_compiler_archive_impl(rctx):
     }
     rctx.template(
         "BUILD.bazel",
-        Label("//templates/{toolchain_type}:BUILD.compiler.bazel.tpl".format(toolchain_type = rctx.attr.toolchain_type)),
+        Label("//arm_gcc/templates:BUILD.compiler.bazel.tpl"),
         substitutions
     )
     
@@ -39,8 +39,8 @@ def _arm_compiler_archive_impl(rctx):
         stripPrefix = strip_prefix,
     )
 
-arm_compiler_archive = repository_rule(
-    implementation = _arm_compiler_archive_impl,
+arm_gcc_archive = repository_rule(
+    implementation = _impl_arm_gcc_archive,
     attrs = {
         'override_host_name': attr.string(default = "local"),
 
@@ -50,7 +50,7 @@ arm_compiler_archive = repository_rule(
     },
 )
 
-def _arm_toolchain_impl(rctx):
+def _impl_arm_gcc_toolchain(rctx):
     host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
     if rctx.attr.override_host_name != "" and rctx.attr.override_host_name != "local":
         host_os, _, host_name = split_host_name(rctx.attr.override_host_name)
@@ -69,6 +69,10 @@ def _arm_toolchain_impl(rctx):
         compiler_full_package = compiler_package
         compiler_package_path = rctx.attr.compiler_archive_package.workspace_root + "/"
 
+    specs = [ "--specs={}.specs".format(spec) for spec in rctx.attr.specs ]
+    copts = rctx.attr.mcuopts + rctx.attr.copts
+    linkopts = rctx.attr.mcuopts + rctx.attr.linkopts + specs
+
     substitutions = {
         "%{name}": rctx.name,
         "%{rctx_name}": rctx.name,
@@ -86,10 +90,13 @@ def _arm_toolchain_impl(rctx):
         "%{exec_compatible_with}": json.encode(rctx.attr.exec_compatible_with),
         "%{target_compatible_with}": json.encode(rctx.attr.target_compatible_with),
 
-        "%{copts}": json.encode(rctx.attr.copts),
+        "%{toolchain_builtin_includedirs_isystem}": json.encode(rctx.attr.toolchain_builtin_includedirs_isystem),
+        "%{toolchain_builtin_includedirs}": json.encode(rctx.attr.toolchain_builtin_includedirs),
+
+        "%{copts}": json.encode(copts),
         "%{conlyopts}": json.encode(rctx.attr.conlyopts),
         "%{cxxopts}": json.encode(rctx.attr.cxxopts),
-        "%{linkopts}": json.encode(rctx.attr.linkopts),
+        "%{linkopts}": json.encode(linkopts),
         "%{defines}": json.encode(rctx.attr.defines),
         "%{includedirs}": json.encode(rctx.attr.includedirs),
         "%{linkdirs}": json.encode(rctx.attr.linkdirs),
@@ -104,17 +111,17 @@ def _arm_toolchain_impl(rctx):
     }
     rctx.template(
         "BUILD.bazel",
-        Label("//templates/{toolchain_type}:BUILD.bazel.tpl".format(toolchain_type = rctx.attr.toolchain_type)),
+        Label("//arm_gcc/templates:BUILD.bazel.tpl"),
         substitutions
     )
     rctx.template(
         "rules.bzl",
-        Label("//templates/{toolchain_type}:rules.bzl.tpl".format(toolchain_type = rctx.attr.toolchain_type)),
+        Label("//arm_gcc/templates:rules.bzl.tpl"),
         substitutions
     )
     rctx.template(
         "vscode.bzl",
-        Label("//templates/{toolchain_type}:vscode.bzl.tpl".format(toolchain_type = rctx.attr.toolchain_type)),
+        Label("//arm_gcc/templates:vscode.bzl.tpl"),
         substitutions
     )
 
@@ -129,19 +136,23 @@ def _arm_toolchain_impl(rctx):
             stripPrefix = strip_prefix,
         )
 
-_arm_toolchain = repository_rule(
-    implementation = _arm_toolchain_impl,
+arm_gcc_toolchain = repository_rule(
+    implementation = _impl_arm_gcc_toolchain,
     attrs = {
         'override_host_name': attr.string(default = "local"),
 
-        'toolchain_type': attr.string(mandatory = True),
+        'toolchain_type': attr.string(mandatory = True, values = ["arm-none-eabi", "aarch64-none-elf"]),
         'toolchain_version': attr.string(default = "latest"),
 
-        'registry_json': attr.string(mandatory = True),
+        'registry_json': attr.string(default = json.encode(ARM_GCC_REGISTRY)),
 
         'exec_compatible_with': attr.string_list(default = []),
         'target_compatible_with': attr.string_list(default = []),
 
+        'toolchain_builtin_includedirs_isystem': attr.string_list(default = []),
+        'toolchain_builtin_includedirs': attr.string_list(default = []),
+
+        'mcuopts': attr.string_list(default = []),
         'copts': attr.string_list(default = []),
         'conlyopts': attr.string_list(default = []),
         'cxxopts': attr.string_list(default = []),
@@ -150,6 +161,7 @@ _arm_toolchain = repository_rule(
         'includedirs': attr.string_list(default = []),
         'linkdirs': attr.string_list(default = []),
         'linklibs': attr.string_list(default = []),
+        'specs': attr.string_list(default = []),
         # dbg / opt
         'dbg_copts': attr.string_list(default = []),
         'dbg_linkopts': attr.string_list(default = []),
@@ -162,142 +174,40 @@ _arm_toolchain = repository_rule(
     },
 )
 
-def arm_toolchain(
-        name,
-        toolchain_type,
-        toolchain_version = "latest",
-
-        exec_compatible_with = [],
-        target_compatible_with = [],
-
-        copts = [],
-        conlyopts = [],
-        cxxopts = [],
-        linkopts = [],
-        defines = [],
-        includedirs = [],
-        linkdirs = [],
-        linklibs = [],
-        # dbg / opt
-        dbg_copts = [],
-        dbg_linkopts = [],
-        opt_copts = [],
-        opt_linkopts = [],
-
-        specs = [],
-
-        toolchain_extras_filegroups = [],
-        
-        registry = ARM_REGISTRY,
-
-        compiler_archive_package = None,
-
-        override_host_name = "local",
-    ):
-    """arm Toolchain
-
-    This macro create a repository containing all files needded to get an hermetic toolchain
-
-    Args:
-        name: Name of the repo that will be created
-        toolchain_type: The arm type to use, avaible: [ arm-none-eabi ]
-        toolchain_version: The arm archive version
-
-        exec_compatible_with: The target_compatible_with list for the toolchain
-        target_compatible_with: The target_compatible_with list for the toolchain
-
-        copts: copts
-        conlyopts: conlyopts
-        cxxopts: cxxopts
-        linkopts: linkopts
-        defines: defines
-        includedirs: includedirs
-        linkdirs: linkdirs
-        # dbg / opt
-        linklibs: linklibs
-        dbg_copts: dbg_copts
-        dbg_linkopts: dbg_linkopts
-        opt_copts: opt_copts
-        opt_linkopts: opt_linkopts
-
-        specs: specs for the compiler (nano, nosys, ...)
-        
-        toolchain_extras_filegroups: filegroup added to the cc_toolchain rule to get access to thoses files when sandboxed
-
-        registry: The arm registry to use, to allow close environement to provide their own mirroir/url
-
-        compiler_archive_package: The arm archive to use. If none are provided, one will be defined automatically
-
-        override_host_name: override_host_name
-    """
-    if registry == None:
-        registry = ARM_REGISTRY
-
-    linkopts = linkopts + [ "--specs={}.specs".format(spec) for spec in specs ]
-
-    _arm_toolchain(
-        name = name,
-        toolchain_type = toolchain_type,
-        toolchain_version = toolchain_version,
-
-        registry_json = json.encode(registry),
-
-        exec_compatible_with = exec_compatible_with,
-        target_compatible_with = target_compatible_with,
-
-        copts = copts,
-        conlyopts = conlyopts,
-        cxxopts = cxxopts,
-        linkopts = linkopts,
-        defines = defines,
-        includedirs = includedirs,
-        linkdirs = linkdirs,
-        linklibs = linklibs,
-        # dbg / opt
-        dbg_copts = dbg_copts,
-        dbg_linkopts = dbg_linkopts,
-        opt_copts = opt_copts,
-        opt_linkopts = opt_linkopts,
-
-        toolchain_extras_filegroups = toolchain_extras_filegroups,
-
-        compiler_archive_package = compiler_archive_package,
-
-        override_host_name = override_host_name,
-    )
-
-def _arm_toolchain_extension_impl(module_ctx):
+def _impl_arm_gcc_toolchain_extension(module_ctx):
     toolchain_versions_list = [
         (toolchain.override_host_name, toolchain.toolchain_type, toolchain.toolchain_version)
         for mod in module_ctx.modules 
-        for toolchain in mod.tags.arm_toolchain
+        for toolchain in mod.tags.arm_gcc_toolchain
     ]
     if len(toolchain_versions_list) == 0:
-        print("Should not end here ! You probably forgotten to put a mandatory argument to the arm_toolchain rule <maybe toolchain_type>")
+        print("Should not end here ! You probably forgotten to put a mandatory argument to the arm_gcc_toolchain rule maybe <toolchain_type>")
     toolchain_versions_list = sets.to_list(sets.make(toolchain_versions_list))
 
     for toolchain_version in toolchain_versions_list:
-        arm_compiler_archive(
-            name = "archive_arm-{}-{}-{}".format(toolchain_version[0], toolchain_version[1], toolchain_version[2]),
+        arm_gcc_archive(
+            name = "archive_arm_gcc-{}-{}-{}".format(toolchain_version[0], toolchain_version[1], toolchain_version[2]),
+            override_host_name = toolchain_version[0],
             toolchain_type = toolchain_version[1],
             toolchain_version = toolchain_version[2],
-            registry_json = json.encode(ARM_REGISTRY),
-            override_host_name = toolchain_version[0],
-
-            # thmub and ilp32 folder are not handled here...
-            # should not be an issue since they are handled using -I and -L
+            registry_json = json.encode(ARM_GCC_REGISTRY),
         )
     
     for mod in module_ctx.modules:
-        for toolchain in mod.tags.arm_toolchain:
-            arm_toolchain(
+        for toolchain in mod.tags.arm_gcc_toolchain:
+            arm_gcc_toolchain(
                 name = toolchain.name,
+                
                 toolchain_type = toolchain.toolchain_type,
                 toolchain_version = toolchain.toolchain_version,
 
                 exec_compatible_with = toolchain.exec_compatible_with,
                 target_compatible_with = toolchain.target_compatible_with,
 
+                toolchain_builtin_includedirs_isystem = toolchain.toolchain_builtin_includedirs_isystem,
+                toolchain_builtin_includedirs = toolchain.toolchain_builtin_includedirs,
+
+                mcuopts = toolchain.mcuopts,
                 copts = toolchain.copts,
                 conlyopts = toolchain.conlyopts,
                 cxxopts = toolchain.cxxopts,
@@ -311,20 +221,20 @@ def _arm_toolchain_extension_impl(module_ctx):
 
                 toolchain_extras_filegroups = toolchain.toolchain_extras_filegroups,
 
-                compiler_archive_package = "@archive_arm-{}-{}-{}".format(toolchain.override_host_name, toolchain.toolchain_type, toolchain.toolchain_version),
+                compiler_archive_package = "@archive_arm_gcc-{}-{}-{}".format(toolchain.override_host_name, toolchain.toolchain_type, toolchain.toolchain_version),
 
                 override_host_name = toolchain.override_host_name,
             )
     
-arm_toolchain_extension = module_extension(
-    implementation = _arm_toolchain_extension_impl,
+arm_gcc_toolchain_extension = module_extension(
+    implementation = _impl_arm_gcc_toolchain_extension,
     tag_classes = {
-        "arm_toolchain": tag_class(attrs = {
+        "arm_gcc_toolchain": tag_class(attrs = {
             'override_host_name': attr.string(default = "local"),
 
             'name': attr.string(mandatory = True),
             
-            'toolchain_type': attr.string(mandatory = True),
+            'toolchain_type': attr.string(mandatory = True, values = ["arm-none-eabi", "aarch64-none-elf"]),
             'toolchain_version': attr.string(default = "latest"),
 
             'compiler_archive_package': attr.label(default = None),
@@ -332,6 +242,10 @@ arm_toolchain_extension = module_extension(
             'exec_compatible_with': attr.string_list(default = []),
             'target_compatible_with': attr.string_list(default = []),
 
+            'toolchain_builtin_includedirs_isystem': attr.string_list(default = []),
+            'toolchain_builtin_includedirs': attr.string_list(default = []),
+
+            'mcuopts': attr.string_list(default = []),
             'copts': attr.string_list(default = []),
             'conlyopts': attr.string_list(default = []),
             'cxxopts': attr.string_list(default = []),

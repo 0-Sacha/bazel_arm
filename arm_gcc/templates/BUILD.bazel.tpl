@@ -1,39 +1,34 @@
 ""
 
-load("@bazel_utilities//toolchains:cc_toolchain_config.bzl", "cc_toolchain_config")
+load("@bazel_utilities//toolchains:cc_toolchain_config.bzl", "cc_toolchain_config_bins")
 
 package(default_visibility = ["//visibility:public"])
 
-cc_toolchain_config(
+
+cc_toolchain_config_bins(
     name = "cc_config_%{toolchain_id}",
     toolchain_identifier = "%{toolchain_id}",
 
     compiler_type = "gcc",
 
-    toolchain_bins = {
-        "%{compiler_package}:cpp": "cpp",
-        "%{compiler_package}:cc": "cc",
-        "%{compiler_package}:cxx": "cxx",
-        "%{compiler_package}:as": "as",
-        "%{compiler_package}:ar": "ar",
-        "%{compiler_package}:ld": "ld",
-
-        "%{compiler_package}:objcopy": "objcopy",
-        "%{compiler_package}:strip": "strip",
-
-        "%{compiler_package}:cov": "cov",
-
-        "%{compiler_package}:size": "size",
-        "%{compiler_package}:nm": "nm",
-        "%{compiler_package}:objdump": "objdump",
-        "%{compiler_package}:dwp": "dwp",
-        "%{compiler_package}:dbg": "dbg",
-    },
+    cpp_bin = "%{compiler_package}:cpp",
+    cc_bin = "%{compiler_package}:cc",
+    cxx_bin = "%{compiler_package}:cxx",
+    ar_bin = "%{compiler_package}:ar",
+    as_bin = "%{compiler_package}:as",
+    ld_bin = "%{compiler_package}:ld",
+    strip_bin = "%{compiler_package}:strip",
+    cov_bin = "%{compiler_package}:cov",
+    nm_bin = "%{compiler_package}:nm",
+    objdump_bin = "%{compiler_package}:objdump",
 
     toolchain_builtin_includedirs_isystem = [
         "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}/%{toolchain_type}",
         "%{compiler_package_path}%{toolchain_type}/include/c++/%{compiler_version}",
-    ],
+    ] + %{toolchain_builtin_includedirs_isystem},
+    
+    toolchain_builtin_includedirs = [
+    ] + %{toolchain_builtin_includedirs},
 
     copts = %{copts},
     conlyopts = %{conlyopts},

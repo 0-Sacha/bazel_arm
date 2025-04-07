@@ -1,0 +1,22 @@
+{
+    "cSpell.words": [
+        "bazel",
+        "conlyopts",
+        "cxxopts",
+        "eabi",
+        "filegroup",
+        "filegroups",
+        "includedirs",
+        "isystem",
+        "linkdirs",
+        "linklibs",
+        "linkopts",
+        "mcuopts",
+        "multilib",
+        "newlib",
+        "nosys",
+        "rctx",
+        "skylib",
+        "starlark"
+    ]
+}

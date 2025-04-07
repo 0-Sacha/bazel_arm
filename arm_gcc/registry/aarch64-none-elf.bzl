@@ -6,7 +6,6 @@ ARM_NONE_ELF_ARCHIVES_14_2_REL1 = {
     "latest": True,
     "details": {
         "compiler_version": "14.2.1",
-        "build_file": "compiler.BUILD_arm"
     },
     "archives": {
         "windows_x86_64": {

@@ -1,4 +1,4 @@
-name: arm-none-eabi
+name: gcc/aarch64-none-elf
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
         path: "~/.cache/bazel"
         key: bazel
     - name: Build HelloWorld
-      run: bazelisk build --config=arm-none-eabi //HelloWorld:HelloWorld
+      run: bazelisk build --config=aarch64-none-elf //HelloWorld:HelloWorld
       working-directory: examples/common
 
   ubuntu-latest-x86_64:
@@ -34,7 +34,7 @@ jobs:
         path: "~/.cache/bazel"
         key: bazel
     - name: Build HelloWorld
-      run: bazelisk build --config=arm-none-eabi //HelloWorld:HelloWorld
+      run: bazelisk build --config=aarch64-none-elf //HelloWorld:HelloWorld
       working-directory: examples/common
 
   ubuntu-latest-aarch64:
@@ -48,5 +48,5 @@ jobs:
         path: "~/.cache/bazel"
         key: bazel
     - name: Build HelloWorld
-      run: bazelisk build --config=arm-none-eabi //HelloWorld:HelloWorld
+      run: bazelisk build --config=aarch64-none-elf //HelloWorld:HelloWorld
       working-directory: examples/common
